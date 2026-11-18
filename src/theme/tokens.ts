@@ -64,5 +64,9 @@ export const motion = {
   dur: { instant: 100, fast: 150, base: 200, slow: 300 },
   spring: { press: { damping: 20, stiffness: 400 }, layout: { damping: 26, stiffness: 260 } },
   pressScale: 0.97,
-  ease: { enter: Easing.out(Easing.cubic), exit: Easing.in(Easing.cubic) },
+  // Strong custom curves (Emil Kowalski / Charles Liu): built-in eases are too weak to read as a decision.
+  ease: { out: Easing.bezier(0.23, 1, 0.32, 1), inOut: Easing.bezier(0.77, 0, 0.175, 1), in: Easing.bezier(0.55, 0, 1, 0.45) },
+  enter: 250,
+  exit: 180,
+  shake: [-10, 10, -6, 6, -3, 0],
 } as const;

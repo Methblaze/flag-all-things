@@ -20,7 +20,7 @@ export function ToggleRow({ label, description, value, onChange, testID }: { lab
   const x = useSharedValue(value ? TRACK_W - THUMB - 3 : 3);
   useEffect(() => {
     const to = value ? TRACK_W - THUMB - 3 : 3;
-    x.value = reduced ? to : withTiming(to, { duration: motion.dur.fast, easing: motion.ease.enter });
+    x.value = reduced ? to : withTiming(to, { duration: motion.dur.fast, easing: motion.ease.inOut });
   }, [value, reduced, x]);
   const thumb = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
 
@@ -32,7 +32,7 @@ export function ToggleRow({ label, description, value, onChange, testID }: { lab
       accessibilityState={{ checked: value }}
       aria-checked={value}
       onPress={() => { tick(); onChange(!value); }}
-      style={(s) => [styles.row, (s as WebState).hovered && { backgroundColor: c.canvas }]}
+      style={(s) => [styles.row, ((s as WebState).hovered || s.pressed) && { backgroundColor: c.canvas }]}
     >
       <View style={styles.grow}>
         <AppText>{label}</AppText>

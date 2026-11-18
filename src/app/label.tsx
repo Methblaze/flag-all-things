@@ -91,7 +91,7 @@ export default function LabelScreen() {
               <Button kind="text" label="Open Settings" onPress={() => router.navigate('/settings')} fullWidth={false} />
             </Banner>
           ) : null}
-          <ResultView product={result.product} report={result.report} />
+          <ResultView product={result.product} report={result.report} reveal />
           <Button kind="secondary" label="Scan another label" onPress={() => { setResult(null); setPhoto(null); }} />
         </>
       ) : (

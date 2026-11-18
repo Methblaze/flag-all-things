@@ -1,13 +1,14 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { AppText, Card } from '@/components/primitives';
 import { SeverityIcon } from '@/components/severity';
 import type { Flag, FlagCategory, Severity } from '@/domain/types';
-import { layout, radius, space } from '@/theme/tokens';
+import { layout, motion, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 export const SECTION_NAMES: Record<FlagCategory, string> = {
@@ -40,7 +41,7 @@ export function FlagSection({ category, flags, missing }: { category: FlagCatego
         aria-expanded={expandable ? open : undefined}
         disabled={!expandable}
         onPress={() => setOpen(o => !o)}
-        style={styles.header}
+        style={({ pressed }) => [styles.header, pressed && { backgroundColor: c.canvas }]}
       >
         <View style={styles.headLeft}>
           <AppText testID={`section-name-${category}`} variant="section">{SECTION_NAMES[category]}</AppText>
@@ -49,9 +50,14 @@ export function FlagSection({ category, flags, missing }: { category: FlagCatego
             <AppText variant="meta" color={c.muted}>{label}</AppText>
           </View>
         </View>
-        {expandable ? <Feather name={open ? 'chevron-up' : 'chevron-down'} size={22} color={c.ink} /> : null}
+        {expandable ? <Chevron open={open} /> : null}
       </Pressable>
-      {open && expandable ? flags.map(f => <FlagRow key={f.id} flag={f} />) : null}
+      {open && expandable ? (
+        // Rows arrive with the section in one piece (no stagger inside a moving container).
+        <Animated.View entering={FadeIn.duration(motion.dur.base).easing(motion.ease.out)} exiting={FadeOut.duration(motion.dur.fast)}>
+          {flags.map(f => <FlagRow key={f.id} flag={f} />)}
+        </Animated.View>
+      ) : null}
     </Card>
   );
 }
@@ -62,7 +68,7 @@ function FlagRow({ flag }: { flag: Flag }) {
   return (
     <View style={[styles.row, { borderTopColor: c.border }]}>
       <Pressable testID={`flag-${flag.id}`} accessibilityRole="button" accessibilityState={{ expanded: open }} aria-expanded={open}
-        onPress={() => setOpen(o => !o)} style={styles.rowHead}>
+        onPress={() => setOpen(o => !o)} style={({ pressed }) => [styles.rowHead, pressed && { backgroundColor: c.canvas }]}>
         <SeverityIcon tone={flag.severity} />
         <View style={styles.grow}>
           <AppText>{flag.title}</AppText>
@@ -72,7 +78,7 @@ function FlagRow({ flag }: { flag: Flag }) {
         </View>
       </Pressable>
       {open ? (
-        <View style={styles.detail}>
+        <Animated.View entering={FadeIn.duration(motion.dur.base).easing(motion.ease.out)} exiting={FadeOut.duration(motion.dur.fast)} style={styles.detail}>
           <AppText color={c.muted}>{flag.detail}</AppText>
           {flag.source ? (
             <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(flag.source!.url)} style={styles.link}>
@@ -85,10 +91,19 @@ function FlagRow({ flag }: { flag: Flag }) {
               <AppText variant="meta" style={styles.underline}>Change alerts</AppText>
             </Pressable>
           ) : null}
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );
+}
+
+/** One icon that turns, rather than two icons swapping: the turn says open/closed. */
+export function Chevron({ open }: { open: boolean }) {
+  const c = useTheme();
+  const turn = useSharedValue(open ? 180 : 0);
+  useEffect(() => { turn.value = withTiming(open ? 180 : 0, { duration: motion.dur.base, easing: motion.ease.inOut }); }, [open, turn]);
+  const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.value}deg` }] }));
+  return <Animated.View style={style}><Feather name="chevron-down" size={22} color={c.ink} /></Animated.View>;
 }
 
 const styles = StyleSheet.create({

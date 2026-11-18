@@ -170,8 +170,10 @@ Each severity has four tokens:
 | `dur.slow` | 300 ms | Summary reveal, accordion, screen transitions |
 | `spring.press` | Reanimated `{ damping: 20, stiffness: 400 }`, scale 0.97 | Buttons, chips, rows |
 | `spring.layout` | `{ damping: 26, stiffness: 260 }` | Accordion height, list reflow (interruptible) |
-| `ease.enter` | `Easing.out(Easing.cubic)` | Elements entering |
-| `ease.exit` | `Easing.in(Easing.cubic)` | Elements leaving |
+| `ease.out` | `Easing.bezier(0.23, 1, 0.32, 1)` | Elements entering (strong ease-out) |
+| `ease.inOut` | `Easing.bezier(0.77, 0, 0.175, 1)` | Moving or resizing on screen (accordion, switch thumb, list reflow) |
+| `ease.in` | `Easing.bezier(0.55, 0, 1, 0.45)` | Elements leaving, on the shorter exit duration |
+| `enter` / `exit` | 250 ms / 180 ms | Toast and sheet enter, exit about 25% faster |
 
 - Animate only `transform` and `opacity`. Accordion height uses Reanimated layout animations, not the JS thread.
 - **Reduced motion** (`useReducedMotion`): every movement becomes a `dur.fast` opacity change, and the skeleton shimmer stops.

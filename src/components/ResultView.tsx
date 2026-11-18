@@ -1,33 +1,39 @@
-import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
 import { Button } from '@/components/Button';
-import { FlagSection } from '@/components/FlagSection';
+import { Chevron, FlagSection } from '@/components/FlagSection';
 import { AppText, Card } from '@/components/primitives';
 import { SummaryCard } from '@/components/SummaryCard';
 import type { FlagReport, Product } from '@/domain/types';
 import { CATEGORY_ORDER } from '@/engine/analyze';
-import { layout, space } from '@/theme/tokens';
+import { layout, motion, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-/** Summary card, then the five sections, then the ingredients as printed. Shared by Product and Label. */
-export function ResultView({ product, report, status }: { product: Product; report: FlagReport; status?: string }) {
+// Siblings glide when a section above them opens or closes (moving in place: ease-in-out).
+const glide = LinearTransition.duration(motion.dur.base).easing(motion.ease.inOut);
+
+/** Summary card, then the five sections, then the ingredients as printed. Shared by Product and Label.
+ *  `reveal` fades the result in when it replaces a skeleton; a cached result paints at rest. */
+export function ResultView({ product, report, status, reveal = false }: { product: Product; report: FlagReport; status?: string; reveal?: boolean }) {
   return (
-    <>
+    <Animated.View style={styles.stack} entering={reveal ? FadeIn.duration(motion.dur.base).easing(motion.ease.out) : undefined}>
       <SummaryCard product={product} report={report} status={status} />
       {report.verdict === 'unknown' ? (
         <Button label="Scan ingredient label" icon="camera"
           onPress={() => router.push({ pathname: '/label', params: product.barcode ? { barcode: product.barcode } : {} })} />
       ) : null}
-      <View style={styles.sections}>
+      <Animated.View style={styles.sections} layout={glide}>
         {CATEGORY_ORDER.map(cat => (
-          <FlagSection key={cat} category={cat} flags={report.flags.filter(f => f.category === cat)} missing={report.missing.includes(cat)} />
+          <Animated.View key={cat} layout={glide}>
+            <FlagSection category={cat} flags={report.flags.filter(f => f.category === cat)} missing={report.missing.includes(cat)} />
+          </Animated.View>
         ))}
-      </View>
-      {product.ingredientsText ? <Ingredients text={product.ingredientsText} /> : null}
-    </>
+      </Animated.View>
+      {product.ingredientsText ? <Animated.View layout={glide}><Ingredients text={product.ingredientsText} /></Animated.View> : null}
+    </Animated.View>
   );
 }
 
@@ -36,16 +42,21 @@ function Ingredients({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   return (
     <Card>
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} aria-expanded={open} onPress={() => setOpen(o => !o)} style={styles.header}>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} aria-expanded={open} onPress={() => setOpen(o => !o)} style={({ pressed }) => [styles.header, pressed && { backgroundColor: c.canvas }]}>
         <AppText variant="section" style={styles.grow}>Ingredients</AppText>
-        <Feather name={open ? 'chevron-up' : 'chevron-down'} size={22} color={c.ink} />
+        <Chevron open={open} />
       </Pressable>
-      {open ? <AppText variant="ingredients" style={styles.body} selectable>{text}</AppText> : null}
+      {open ? (
+        <Animated.View entering={FadeIn.duration(motion.dur.base).easing(motion.ease.out)}>
+          <AppText variant="ingredients" style={styles.body} selectable>{text}</AppText>
+        </Animated.View>
+      ) : null}
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
+  stack: { gap: space.s6 },
   sections: { gap: space.s3 },
   header: { minHeight: layout.row, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s4 },
   grow: { flex: 1 },

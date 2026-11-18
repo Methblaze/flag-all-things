@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { FadeInDown, FadeOutDown, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { AppText } from '@/components/primitives';
 import { layout, motion, radius, space, z } from '@/theme/tokens';
@@ -40,24 +42,44 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={show}>
       {children}
       {toast ? (
-        <ToastView key={toast.key} toast={toast} onPause={stop} onResume={start}
+        <ToastView key={toast.key} toast={toast} onPause={stop} onResume={start} onDismiss={() => dismiss(true)}
           onAction={() => { toast.onAction?.(); dismiss(false); }} />
       ) : null}
     </ToastContext.Provider>
   );
 }
 
-function ToastView({ toast, onAction, onPause, onResume }: { toast: ToastSpec; onAction: () => void; onPause: () => void; onResume: () => void }) {
+const DISMISS_DISTANCE = 40;
+const DISMISS_VELOCITY = 500; // px/s: a quick flick dismisses even short of the distance (momentum, not threshold)
+
+function ToastView({ toast, onAction, onPause, onResume, onDismiss }: { toast: ToastSpec; onAction: () => void; onPause: () => void; onResume: () => void; onDismiss: () => void }) {
   const c = useTheme();
   const insets = useSafeAreaInsets();
+  const y = useSharedValue(0);
+  // Swipe down to dismiss: 1:1 under the finger, rubber-banded upward, a spring carries it home on release.
+  const pan = Gesture.Pan()
+    .activeOffsetY([-8, 8])
+    .onStart(() => { scheduleOnRN(onPause); })
+    .onUpdate(e => { y.value = e.translationY > 0 ? e.translationY : e.translationY / 4; })
+    .onEnd(e => {
+      if (y.value > DISMISS_DISTANCE || e.velocityY > DISMISS_VELOCITY) {
+        y.value = withTiming(y.value + 60, { duration: motion.exit, easing: motion.ease.in });
+        scheduleOnRN(onDismiss);
+      } else {
+        y.value = withSpring(0, motion.spring.layout);
+        scheduleOnRN(onResume);
+      }
+    });
+  const drag = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { bottom: insets.bottom + TAB_BAR + space.s3 }]}>
+      {/* Enters and leaves from the same edge it is swiped toward (spatial consistency); exit is faster than enter. */}
+      <Animated.View style={styles.full} entering={FadeInDown.duration(motion.enter).easing(motion.ease.out)} exiting={FadeOutDown.duration(motion.exit).easing(motion.ease.in)}>
+      <GestureDetector gesture={pan}>
       <Animated.View
-        entering={FadeIn.duration(motion.dur.base)}
-        exiting={FadeOut.duration(motion.dur.fast)}
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
-        style={[styles.toast, { backgroundColor: c.ink, shadowColor: c.shadow }]}
+        style={[styles.toast, { backgroundColor: c.ink, shadowColor: c.shadow }, drag]}
       >
         <AppText color={c.onInk} style={styles.message}>{toast.message}</AppText>
         {toast.actionLabel ? (
@@ -68,11 +90,14 @@ function ToastView({ toast, onAction, onPause, onResume }: { toast: ToastSpec; o
           </Pressable>
         ) : null}
       </Animated.View>
+      </GestureDetector>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  full: { width: '100%', alignItems: 'center' },
   wrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingHorizontal: space.s4, zIndex: z.toast },
   toast: { width: '100%', maxWidth: layout.maxWidth - space.s8, flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s2, paddingLeft: space.s4, paddingRight: space.s2, borderRadius: radius.lg, borderCurve: 'continuous', shadowOffset: { width: 0, height: 4 }, shadowRadius: 16, shadowOpacity: 1, elevation: 4 },
   message: { flex: 1 },

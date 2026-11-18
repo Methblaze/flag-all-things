@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { AppState, Linking, Platform, Pressable, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 
 import { Button } from '@/components/Button';
 import { AppText, Screen } from '@/components/primitives';
@@ -11,7 +12,7 @@ import { Banner } from '@/components/severity';
 import { TextField } from '@/components/TextField';
 import { checkBarcode, createScanGate, type BarcodeCheck } from '@/domain/barcode';
 import { EXAMPLE_BARCODES } from '@/services/off';
-import { layout, radius, space } from '@/theme/tokens';
+import { layout, motion, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 const ERRORS: Record<Extract<BarcodeCheck, { ok: false }>['reason'], string> = {
@@ -62,9 +63,20 @@ export default function ScanScreen() {
     go(check.code);
   };
 
+  // A failed submit is the one moment that must register: shake the field, buzz, keep focus there.
+  const reduced = useReducedMotion();
+  const shakeX = useSharedValue(0);
+  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shakeX.value }] }));
+  const shake = () => {
+    if (!isWeb) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    field.current?.focus();
+    if (reduced) return;
+    shakeX.value = withSequence(...motion.shake.map(x => withTiming(x, { duration: 60, easing: motion.ease.inOut })));
+  };
+
   const submit = () => {
     const check = checkBarcode(input);
-    if (!check.ok) return setError(ERRORS[check.reason]);
+    if (!check.ok) { shake(); return setError(ERRORS[check.reason]); }
     if (check.kind === 'store-weighed') return setWeighed(true);
     go(check.code);
   };
@@ -119,13 +131,13 @@ export default function ScanScreen() {
         </Banner>
       ) : null}
 
-      <View style={styles.manual}>
+      <Animated.View style={[styles.manual, shakeStyle]}>
         <TextField ref={field} testID="manual-entry" label="Barcode" placeholder="8 or 13 digits" value={input} error={error}
           hint={isWeb ? '/' : undefined} keyboardType="number-pad" inputMode="numeric" autoCorrect={false} returnKeyType="search"
           onChangeText={t => { setInput(t); setError(null); setWeighed(false); }} onSubmitEditing={submit}
           trailing={<Button kind={cameraUsable && granted ? 'secondary' : 'primary'} label="Look up" onPress={submit} disabled={digits < 8} fullWidth={false} />} />
         {digits > 0 && digits < 8 ? <AppText variant="meta" color={c.muted}>Barcodes have at least 8 digits</AppText> : null}
-      </View>
+      </Animated.View>
 
       {showExamples ? (
         <View style={styles.examples} testID="example-barcodes">
@@ -133,7 +145,7 @@ export default function ScanScreen() {
           <View style={styles.chips}>
             {EXAMPLE_BARCODES.map(e => (
               <Pressable key={e.code} testID={`example-${e.code}`} accessibilityRole="link" accessibilityLabel={`${e.label}, barcode ${e.code}`}
-                onPress={() => go(e.code)} style={[styles.chip, { borderColor: c.borderStrong, backgroundColor: c.surface }]}>
+                onPress={() => go(e.code)} style={({ pressed }) => [styles.chip, { borderColor: c.borderStrong, backgroundColor: pressed ? c.canvas : c.surface }]}>
                 <AppText>{e.label}</AppText>
               </Pressable>
             ))}

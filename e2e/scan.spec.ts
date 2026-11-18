@@ -18,6 +18,7 @@ test('a bad check digit is caught inline and the text is kept', async ({ page })
   await expect(page.getByText("That barcode doesn't add up. Check the last digit.")).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByTestId('manual-entry')).toHaveValue('5701234567890');
+  await expect(page.getByTestId('manual-entry')).toBeFocused();
 });
 
 test('a store weighed-goods label points to the label scan', async ({ page }) => {
