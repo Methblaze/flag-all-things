@@ -1,0 +1,15 @@
+/* Hallmark · v2.0.0 · shape: app screen · system: DESIGN.md (locked) · web-only base: focus, overflow, reduced motion. Tokens mirror src/theme/tokens.ts.
+   critique: native-first app; CSS only covers what React Native Web cannot express (true :focus-visible, page overflow).
+   waive 7b (pure #fff): onInk/surface white is the contrast-checked DESIGN.md §2 token, used only on ink.
+   waive 26b (:active): press feedback is a Reanimated spring on transform (DESIGN.md §8), not CSS. */
+:root { --color-ink: #16181D; --color-on-ink: #FFFFFF; --color-canvas: #F6F6F3; }
+@media (prefers-color-scheme: dark) { :root { --color-ink: #F1F1EE; --color-on-ink: #16181D; --color-canvas: #101113; } }
+html, body { overflow-x: clip; background: var(--color-canvas); }
+:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+/* the toast is ink-filled: its action needs the inverse ring */
+[role="alert"] :focus-visible { outline-color: var(--color-on-ink); }
+:focus:not(:focus-visible) { outline: none; }
+[aria-disabled="true"], :disabled { cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
