@@ -2,6 +2,8 @@
 
 Date: 2026-11-18 · Stage 2 of 6 · Builds on the [design doc](2026-11-18-flag-all-things-design.md) and the [plan](../plans/2026-11-18-flag-all-things.md)
 
+> **Copy updated after Stage 4:** Hallmark's floor bans middle-dot strings and em dashes in UI copy, so the strings below are the shipped ones (commas, full stops, parentheses, and separate Undo buttons).
+
 This document says **how the app behaves**. Visual values (colours, type, radii, spacing) come from `DESIGN.md` in Stage 3. Exact motion curves come from Stage 5. Where this spec names a duration, it is the budget that Stage 5 must stay within.
 
 ---
@@ -28,7 +30,7 @@ This document says **how the app behaves**. Visual values (colours, type, radii,
 | Acknowledge within 100 ms | Every press shows its pressed state immediately. Anything that takes longer than 100 ms shows a skeleton or an inline progress indicator by 400 ms (Doherty threshold). |
 | Skeletons, not spinners | Page-level loading uses skeletons that match the final layout. The only spinners are inside buttons, during the label upload. |
 | Stale-while-revalidate | A cached product renders instantly. A background refresh shows the small "Updating…" text in the summary card's meta line, never a blocking state. |
-| Optimistic preferences | Toggles in Settings apply instantly. If saving fails, the toggle snaps back and a toast says "Couldn't save — try again". |
+| Optimistic preferences | Toggles in Settings apply instantly. If saving fails, the toggle snaps back and a toast says "Couldn't save. Try again.". |
 | Undo, not "are you sure" | Deleting a history item gives an undo toast lasting 5 s. No confirm dialogs anywhere in v1. |
 | No double actions | The scan gate ignores the same code for 3 s. The label "Read label" button goes into its loading state and refuses input while a request is in flight (one at a time). |
 | Errors | Each error message says what happened, what to do next, and offers one action. User input (a typed barcode, a chosen photo) is always kept. |
@@ -72,7 +74,7 @@ Scan tab (viewfinder live, hint "Point at a barcode")
   → Back → Scan, camera resumes, gate still holds the last code for the rest of its 3 s
 ```
 
-**F1b, a weighed-goods code.** The notice reads: "This is a store's own price label — scan the ingredient label instead". It has a secondary button **Scan ingredient label** that opens Label without a barcode. The notice dismisses itself once a different code is detected.
+**F1b, a weighed-goods code.** The notice reads: "This is a store's own price label. Scan the ingredient label instead.". It has a secondary button **Scan ingredient label** that opens Label without a barcode. The notice dismisses itself once a different code is detected.
 
 ### F2 — Scan without a camera (web, desktop, permission denied)
 
@@ -110,13 +112,13 @@ Result screen, state "not-found":
   → picker cancelled ........ stay, nothing changes
   → photo chosen ............ thumbnail preview + [Read label] primary + [Retake] secondary
   → [Read label]
-       button → loading ("Reading label…"), preview dims, progress copy at 3 s: "Still reading — labels with small print take longer"
+       button → loading ("Reading label…"), preview dims, progress copy at 3 s: "Still reading. Labels with small print take longer."
        ├─ no key ............ example result (instant) → Result view with Example banner; NOT saved to History
        │                      (saving would cache fake data under a real barcode)
        ├─ success ........... Result view (same components as /product), saved to History, toast "Saved to History"
        ├─ unreadable ........ error: "Couldn't read a label in this photo. Try again with the ingredient list filling the frame." [Retake]
        ├─ bad-key ........... error: "Your API key was rejected." [Open Settings]
-       ├─ network ........... error: "No connection. Your photo is kept — try again when you're online." [Try again]
+       ├─ network ........... error: "No connection. Your photo is kept, so try again when you are online." [Try again]
        ├─ refused ........... error: "This photo couldn't be processed. Try a different photo." [Retake]
        └─ invalid-response .. error: "The reading came back incomplete. Try again." [Try again]
   Photo is kept across every error until the user retakes or leaves.
@@ -144,7 +146,7 @@ History tab
   └─ list (newest first): thumbnail · name/brand · verdict word+dot · relative time
        tap → /product/[code] from cache (works offline)
        delete (native: swipe left reveals Delete; full swipe deletes · web: trailing × button)
-         → row collapses (≤200 ms), toast "Removed · Undo" for 5 s
+         → row collapses (≤200 ms), toast "Removed" with an Undo button for 5 s
          → Undo → row returns to its original position
 ```
 
@@ -153,10 +155,10 @@ History tab
 ```
 Sections: Allergens · Diet · Alerts · AI label reading
   Toggle → instant (optimistic) → affected results recompute next time they're opened
-  E-number alerts: field "Add E-number" accepts "E250", "e 250", "250" → chip "E250 · Sodium nitrite" (×)
+  E-number alerts: field "Add E-number" accepts "E250", "e 250", "250" → chip "E250 Sodium nitrite" (×)
        invalid → inline "Use an E-number like E250"
   API key: paste → [Save key] → "Key saved" + masked "sk-ant-…a1b2" + [Remove key]
-       Remove → key cleared immediately, toast "Key removed · Undo"
+       Remove → key cleared immediately, toast "Key removed" with an Undo button
        Key is not validated on save (that would cost a call); first real read surfaces bad-key (F4)
 ```
 
@@ -170,11 +172,11 @@ Sections: Allergens · Diet · Alerts · AI label reading
 
 | # | Case | Behaviour |
 |---|---|---|
-| E1 | Offline, product cached | Render it. Meta line: "Offline · saved 3 days ago". No error state. |
+| E1 | Offline, product cached | Render it. Meta line: "Offline. Saved 3 days ago". No error state. |
 | E2 | Offline, not cached | Offline state: "You're offline" / "This product isn't saved on your phone yet. Try again when you have signal." [Try again] |
 | E3 | OFF busy (429/503) | "Open Food Facts is busy" / "Try again in a minute." [Try again]. No automatic retry. |
 | E4 | Partial data (name only) | Verdict `unknown`: "Not enough data to judge". Every section shows "Not on record". The [Scan ingredient label] CTA appears below the summary card, because the label can fill the gaps. |
-| E5 | Allergen data missing and the user has allergen alerts | A warning flag at the top of Allergens: "Allergen info missing — check the pack". The verdict is at least `caution`. |
+| E5 | Allergen data missing and the user has allergen alerts | A warning flag at the top of Allergens: "Allergen info missing. Check the pack". The verdict is at least `caution`. |
 | E6 | Malformed Danish ingredient text (OCR noise, ALL CAPS, line breaks) | Show it as printed in an "Ingredients" disclosure at the bottom of the result. Parsing tolerates it (plan Task 3). |
 | E7 | Ingredients only in a third language | Show them, with the note "Ingredients not available in Danish or English". Engine text parsing still runs (E-numbers are language-neutral). |
 | E8 | Camera reads the same code repeatedly | Scan gate: one navigation per 3 s. |
@@ -187,7 +189,7 @@ Sections: Allergens · Diet · Alerts · AI label reading
 | E15 | Web on iOS Safari (no torch) | Hide the torch button. Don't show a disabled one. |
 | E16 | Label photo is HEIC or PNG, or huge | Always resize and re-encode to JPEG before upload (plan Task 13). |
 | E17 | App backgrounded while scanning | The camera pauses. On return it resumes and the gate resets. |
-| E18 | Example banner on a label result | "Example result — add your key in Settings to read real labels". Shown above the summary card, with a link to Settings. |
+| E18 | Example banner on a label result | "Example result. Add your key in Settings to read real labels.". Shown above the summary card, with a link to Settings. |
 
 ---
 
@@ -235,7 +237,7 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 | Active | Typing. Spaces and dashes are allowed and stripped on submit (Postel). |
 | Loading | — Lookup happens on the next screen. |
 | Disabled | — The field is never disabled. "Look up" is disabled below 8 digits. |
-| Error | Red border, error icon and text below: "That barcode doesn't add up — check the last digit" (checksum), "Barcodes are 8, 12 or 13 digits" (length), "Use digits only" (not-digits). Text and focus are kept. The error clears on the next edit. |
+| Error | Red border, error icon and text below: "That barcode doesn't add up. Check the last digit." (checksum), "Barcodes are 8, 12 or 13 digits" (length), "Use digits only" (not-digits). Text and focus are kept. The error clears on the next edit. |
 | Success | — Navigation. |
 | Empty | Placeholder shows; "Look up" is disabled. |
 | Skeleton | — |
@@ -280,7 +282,7 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 | Active | — |
 | Loading (refresh) | The content stays and the meta line shows "Updating…". |
 | Disabled | — |
-| Error | Refresh failed while cached data is showing: the meta line reads "Offline · saved 3 days ago" or "Couldn't refresh". |
+| Error | Refresh failed while cached data is showing: the meta line reads "Offline. Saved 3 days ago" or "Couldn't refresh". |
 | Success | First reveal after a fetch: the card enters (Stage 5, ≤300 ms). This is the peak moment. |
 | Empty | Verdict `unknown` with the headline "Not enough data to judge", plus the CTA "Scan ingredient label" (E4). |
 | Skeleton | Verdict-line block, two headline lines, counts pills and meta line, matching the final heights so nothing shifts. |
@@ -349,7 +351,7 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 
 | State | Behaviour |
 |---|---|
-| Default | Bottom of the screen, above the tab bar: "Removed · Undo". `role="status"`. |
+| Default | Bottom of the screen, above the tab bar: "Removed" with an Undo button. `role="status"`. |
 | Hover | Pauses the 5 s timer. |
 | Focus | Reachable by keyboard and pauses the timer. |
 | Active | [Undo] pressed: the item is restored and the toast leaves. |
@@ -383,7 +385,7 @@ A non-interactive strip above the summary card. It has an icon, a sentence and a
 
 | Banner | Copy |
 |---|---|
-| Example | "Example result — add your key in Settings to read real labels" |
+| Example | "Example result. Add your key in Settings to read real labels." |
 | Offline-cached | Shown in the meta line instead of a banner (E1), to keep the screen quiet. |
 
 ---
@@ -433,4 +435,4 @@ A non-interactive strip above the summary card. It has an icon, a sentence and a
 - Buttons start with a verb: Look up, Scan ingredient label, Take photo, Read label, Save key, Try again.
 - Use "barcode", not "EAN". Use "ingredient list", and add "varedeklaration" once in the label hint.
 - Sentence case everywhere. No exclamation marks. Never "Oops".
-- The copy above is canonical. The e2e specs in the plan assert these exact strings: "Not in Open Food Facts yet", "Scan ingredient label", "Enter a different barcode", "This is a store's own price label — scan the ingredient label instead", "Example result — add your key in Settings to read real labels", "Removed · Undo", "Not on record", "Key saved", "Remove key", "Stored only on this device".
+- The copy above is canonical. The e2e specs in the plan assert these exact strings: "Not in Open Food Facts yet", "Scan ingredient label", "Enter a different barcode", "This is a store's own price label. Scan the ingredient label instead.", "Example result. Add your key in Settings to read real labels.", "Removed" with an Undo button, "Not on record", "Key saved", "Remove key", "Stored only on this device".
