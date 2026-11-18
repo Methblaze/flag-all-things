@@ -38,3 +38,13 @@ test('401 → bad-key; connection error → network', async () => {
 });
 test('other errors are not swallowed', async () =>
   await expect(analyzeIngredientPhoto('A', DEFAULT_PREFS, { apiKey: 'k', client: client(() => { throw new Error('boom'); }) })).rejects.toThrow('boom'));
+
+// The real SDK throws these itself (beta.messages.parse throws AnthropicError on unparseable output).
+test.each([
+  [() => new Anthropic.AnthropicError('Failed to parse structured output'), 'invalid-response'],
+  [() => new Anthropic.RateLimitError(429, undefined, 'rate limited', new Headers()), 'busy'],
+  [() => new Anthropic.InternalServerError(529, undefined, 'overloaded', new Headers()), 'busy'],
+  [() => new Anthropic.BadRequestError(400, undefined, 'Your credit balance is too low', new Headers()), 'rejected'],
+  [() => new Anthropic.PermissionDeniedError(403, undefined, 'forbidden', new Headers()), 'rejected'],
+])('SDK error %# maps to a specific LabelError', async (make, code) =>
+  await expect(analyzeIngredientPhoto('A', DEFAULT_PREFS, { apiKey: 'k', client: client(() => { throw make(); }) })).rejects.toMatchObject({ code }));

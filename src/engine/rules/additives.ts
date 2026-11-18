@@ -13,7 +13,7 @@ export const additivesRule: Rule = (p, prefs) => {
     return {
       id: `additive:${code}`, category: 'additives', severity, personal,
       title: `${label} ${info.en}`,
-      detail: `${info.da} · ${info.group.replace('-', ' ')}. ${info.why}`,
+      detail: `${info.da} (${info.group.replace('-', ' ')}). ${info.why}`,
       source: info.source,
     };
   });

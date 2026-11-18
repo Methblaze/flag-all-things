@@ -71,7 +71,7 @@ Scan tab (viewfinder live, hint "Point at a barcode")
                      ├─ not-found . F3
                      ├─ busy ...... busy state + Retry
                      └─ offline ... offline state + Retry
-  → Back → Scan, camera resumes, gate still holds the last code for the rest of its 3 s
+  → Back → Scan, camera resumes, and the 3 s window restarts then (design doc §10), so a pack still in view does not bounce back
 ```
 
 **F1b, a weighed-goods code.** The notice reads: "This is a store's own price label. Scan the ingredient label instead.". It has a secondary button **Scan ingredient label** that opens Label without a barcode. The notice dismisses itself once a different code is detected.

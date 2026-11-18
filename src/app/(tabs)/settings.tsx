@@ -41,7 +41,7 @@ function Group({ title, description, children }: { title: string; description?: 
 export default function SettingsScreen() {
   const c = useTheme();
   const toast = useToast();
-  const { prefs, setPrefs } = usePrefs();
+  const { prefs, setPrefs, loaded } = usePrefs();
   const set = <K extends keyof UserPreferences>(k: K, v: UserPreferences[K]) => setPrefs({ ...prefs, [k]: v });
 
   const [eInput, setEInput] = useState('');
@@ -68,6 +68,9 @@ export default function SettingsScreen() {
     setKey(null);
     toast({ message: 'Key removed', actionLabel: 'Undo', onAction: () => { if (old) setApiKey(old).then(() => setKey(old)).catch(() => {}); } });
   };
+
+  // A toggle tapped before prefs load would save defaults plus one change.
+  if (!loaded) return <Screen><AppText variant="title" accessibilityRole="header">Settings</AppText></Screen>;
 
   return (
     <Screen>

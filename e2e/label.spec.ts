@@ -28,3 +28,12 @@ test('cancelling the picker changes nothing', async ({ page }) => {
   await (await chooser).setFiles([]);
   await expect(page.getByRole('button', { name: 'Read label' })).toHaveCount(0);
 });
+
+test('without a key, even an unreadable file still shows the example (no dead-end retry)', async ({ page }) => {
+  await page.goto('/label');
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByTestId('label-pick').click();
+  await (await chooser).setFiles(join(__dirname, 'fixtures/broken.jpg'));
+  await page.getByRole('button', { name: 'Read label' }).click();
+  await expect(page.getByTestId('verdict')).toBeVisible();
+});

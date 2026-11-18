@@ -18,3 +18,5 @@ test('no flags → "No concerns found"', () => expect(analyze(makeProduct({ ingr
 test('deterministic', () => { const p = makeProduct({ ingredientsText: 'Sukker, E250', nova: 4 }); expect(analyze(p, DEFAULT_PREFS)).toEqual(analyze(p, DEFAULT_PREFS)); });
 test('good verdict headline comes from a good flag, not an info note', () =>
   expect(analyze(makeProduct({ ingredientsText: 'Rugmel', nova: 1, nutriscore: 'a' }), DEFAULT_PREFS).headline).toBe('Nutri-Score A'));
+test('a personal allergen outranks "not enough data"', () =>
+  expect(analyze(makeProduct({ allergens: ['milk'], allergenDataKnown: true }), { ...DEFAULT_PREFS, allergens: ['milk'] })).toMatchObject({ verdict: 'avoid', headline: 'Contains milk (on your alert list)' }));

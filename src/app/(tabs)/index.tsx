@@ -26,7 +26,9 @@ const isWeb = Platform.OS === 'web';
 export default function ScanScreen() {
   const c = useTheme();
   const [focused, setFocused] = useState(true);
-  useFocusEffect(useCallback(() => { setFocused(true); return () => setFocused(false); }, []));
+  const gate = useMemo(() => createScanGate(), []);
+  // Restart the gate window when the camera resumes, so a pack still in view after Back does not bounce (design §10).
+  useFocusEffect(useCallback(() => { setFocused(true); gate.rearm(Date.now()); return () => setFocused(false); }, [gate]));
   const { height } = useWindowDimensions();
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraAvailable, setCameraAvailable] = useState<boolean | null>(isWeb ? null : true);
@@ -36,11 +38,10 @@ export default function ScanScreen() {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const field = useRef<ComponentRef<typeof TextInput>>(null);
-  const gate = useMemo(() => createScanGate(), []);
 
   useEffect(() => { if (isWeb) CameraView.isAvailableAsync().then(setCameraAvailable).catch(() => setCameraAvailable(false)); }, []);
   // Pause the camera in the background; resume on return (interaction spec E17).
-  useEffect(() => { const sub = AppState.addEventListener('change', s => setActive(s === 'active')); return () => sub.remove(); }, []);
+  useEffect(() => { const sub = AppState.addEventListener('change', s => { setActive(s === 'active'); if (s === 'active') gate.rearm(Date.now()); }); return () => sub.remove(); }, []);
   // "/" focuses the barcode field on desktop web.
   useEffect(() => {
     if (!isWeb) return;

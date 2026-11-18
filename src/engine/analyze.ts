@@ -31,8 +31,9 @@ export function analyze(product: Product, prefs: UserPreferences): FlagReport {
   const missing = missingSections(product);
 
   const noData = !product.ingredientsText && missing.includes('nutrition');
-  const verdict: Verdict = noData ? 'unknown'
-    : counts.danger ? 'avoid'
+  // A conflict with the user's own settings wins even when the record is thin.
+  const verdict: Verdict = counts.danger ? 'avoid'
+    : noData ? 'unknown'
     : counts.warning ? 'caution'
     : counts.good ? 'good'
     : 'ok';

@@ -50,3 +50,10 @@ test('web identifies by query string, native by User-Agent', async () => {
   await fetchProduct('5701234567899', { fetchImpl: f as unknown as typeof fetch, platform: 'ios' });
   expect((f.mock.calls[1][1]!.headers as Record<string, string>)['User-Agent']).toMatch(/^FlagAllThings\/\d+\.\d+\.\d+ \(https:/);
 });
+test('a lookup that never answers times out to offline instead of hanging', async () => {
+  const hang = jest.fn((_url: string, init?: RequestInit) => new Promise<Response>((_, reject) => {
+    init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+  }));
+  expect(await fetchProduct('5701234567899', { fetchImpl: hang as unknown as typeof fetch, timeoutMs: 20 })).toEqual({ kind: 'offline' });
+  expect(hang).toHaveBeenCalledTimes(2);
+}, 2000);

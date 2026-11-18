@@ -83,9 +83,12 @@ export function normalizeOff(raw: unknown, fetchedAt: number): Product | null {
 
 type Attempt = OffResult | 'retry';
 
-async function attempt(url: string, init: RequestInit, fetchImpl: typeof fetch, now: number, onNetworkError: Attempt): Promise<Attempt> {
+async function attempt(url: string, init: RequestInit, fetchImpl: typeof fetch, now: number, onNetworkError: Attempt, timeoutMs: number): Promise<Attempt> {
+  // Weak in-store signal must end in the offline state, not an endless skeleton.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   let res: Response;
-  try { res = await fetchImpl(url, init); } catch { return onNetworkError; }
+  try { res = await fetchImpl(url, { ...init, signal: controller.signal }); } catch { return onNetworkError; } finally { clearTimeout(timer); }
   if (res.status === 404) return { kind: 'not-found' };
   if (res.status === 429) return { kind: 'busy' };
   if (!res.ok) return onNetworkError === 'retry' ? 'retry' : { kind: 'busy' };
@@ -98,16 +101,16 @@ async function attempt(url: string, init: RequestInit, fetchImpl: typeof fetch, 
 
 export async function fetchProduct(
   code: string,
-  opts: { fetchImpl?: typeof fetch; platform?: 'web' | 'ios' | 'android'; now?: () => number } = {},
+  opts: { fetchImpl?: typeof fetch; platform?: 'web' | 'ios' | 'android'; now?: () => number; timeoutMs?: number } = {},
 ): Promise<OffResult> {
-  const { fetchImpl = fetch, platform = Platform.OS as 'web' | 'ios' | 'android', now = Date.now } = opts;
+  const { fetchImpl = fetch, platform = Platform.OS as 'web' | 'ios' | 'android', now = Date.now, timeoutMs = 10_000 } = opts;
   const version = Constants.expoConfig?.version ?? '1.0.0';
   // Browsers forbid setting User-Agent; OFF accepts app_name/app_version instead.
   const query = `fields=${OFF_FIELDS}` + (platform === 'web' ? `&app_name=FlagAllThings&app_version=${version}` : '');
   const init: RequestInit = platform === 'web' ? {} : { headers: { 'User-Agent': `FlagAllThings/${version} (${OFF_CONTACT})` } };
 
-  const v3 = await attempt(`${BASE}/api/v3/product/${code}?${query}`, init, fetchImpl, now(), 'retry');
+  const v3 = await attempt(`${BASE}/api/v3/product/${code}?${query}`, init, fetchImpl, now(), 'retry', timeoutMs);
   if (v3 !== 'retry') return v3;
-  const v2 = await attempt(`${BASE}/api/v2/product/${code}.json?${query}`, init, fetchImpl, now(), { kind: 'offline' });
+  const v2 = await attempt(`${BASE}/api/v2/product/${code}.json?${query}`, init, fetchImpl, now(), { kind: 'offline' }, timeoutMs);
   return v2 === 'retry' ? { kind: 'busy' } : v2;
 }

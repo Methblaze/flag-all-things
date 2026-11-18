@@ -22,7 +22,7 @@ const PROBLEMS = {
 export default function ProductScreen() {
   const c = useTheme();
   const { barcode } = useLocalSearchParams<{ barcode: string }>();
-  const { prefs } = usePrefs();
+  const { prefs, loaded } = usePrefs();
   const { status, product, refreshing, refreshFailed, retry } = useProduct(barcode);
   const report = useMemo(() => (product ? analyze(product, prefs) : null), [product, prefs]);
   // Fade in only a result that replaces the skeleton; a cached one is at rest on first paint.
@@ -45,8 +45,9 @@ export default function ProductScreen() {
   return (
     <Screen>
       <BackBar />
-      {status === 'loading' ? <ResultSkeleton /> : null}
-      {status === 'ready' && product && report ? <ResultView product={product} report={report} status={metaStatus ?? undefined} reveal={sawLoading.current} /> : null}
+      {/* Never judge with default settings: wait for the user's own prefs (an allergy must not flash Good). */}
+      {status === 'loading' || (status === 'ready' && !loaded) ? <ResultSkeleton /> : null}
+      {status === 'ready' && loaded && product && report ? <ResultView product={product} report={report} status={metaStatus ?? undefined} reveal={sawLoading.current} /> : null}
       {status === 'not-found' ? (
         <View style={styles.problem}>
           <AppText variant="title" accessibilityRole="header">Not in Open Food Facts yet</AppText>

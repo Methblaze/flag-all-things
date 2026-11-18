@@ -22,11 +22,16 @@ export function checkBarcode(input: string): BarcodeCheck {
   return { ok: true, code, kind };
 }
 
-export function createScanGate(windowMs = 3000): (code: string, now: number) => boolean {
+export type ScanGate = ((code: string, now: number) => boolean) & { rearm: (now: number) => void };
+
+/** One pass per code per window. Call rearm() when the camera resumes, so a pack still in view
+ *  after Back does not bounce straight to the product again (design doc §10). */
+export function createScanGate(windowMs = 3000): ScanGate {
   let last: { code: string; at: number } | null = null;
-  return (code, now) => {
+  const gate = (code: string, now: number) => {
     if (last && last.code === code && now - last.at <= windowMs) return false;
     last = { code, at: now };
     return true;
   };
+  return Object.assign(gate, { rearm: (now: number) => { if (last) last.at = now; } });
 }

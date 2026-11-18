@@ -14,7 +14,7 @@ import type { FlagReport, Product } from '@/domain/types';
 import { usePrefs } from '@/hooks/usePrefs';
 import { analyzeIngredientPhoto, LabelError } from '@/services/label';
 import { prepareLabelImage } from '@/services/label-image';
-import { saveScan } from '@/services/storage';
+import { getApiKey, saveScan } from '@/services/storage';
 import { radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
@@ -27,6 +27,8 @@ const ERRORS: Record<ErrorCode, { text: string; action: 'retake' | 'retry' | 'se
   network: { text: 'No connection. Your photo is kept, so try again when you are online.', action: 'retry' },
   refused: { text: "This photo couldn't be processed. Try a different photo.", action: 'retake' },
   'invalid-response': { text: 'The reading came back incomplete. Try again.', action: 'retry' },
+  busy: { text: 'The AI service is busy. Try again in a minute.', action: 'retry' },
+  rejected: { text: 'Anthropic rejected the request. Check the credit and permissions on your API key.', action: 'settings' },
   image: { text: "This photo couldn't be opened. Try a different photo.", action: 'retake' },
 };
 const isWeb = Platform.OS === 'web';
@@ -62,15 +64,21 @@ export default function LabelScreen() {
     setReading(true); setError(null); setSlow(false);
     const slowTimer = setTimeout(() => setSlow(true), 3000);
     try {
-      const base64 = await prepareLabelImage(photo.uri, photo.width, photo.height).catch(() => { throw new LabelError('invalid-response'); });
-      const r = await analyzeIngredientPhoto(base64, prefs, { barcode: barcode ?? null });
+      const apiKey = await getApiKey();
+      // No key: the example needs no image, so skip decoding (a portfolio visitor never hits an image error).
+      let base64 = '';
+      if (apiKey) {
+        try { base64 = await prepareLabelImage(photo.uri, photo.width, photo.height); }
+        catch { if (live.current) setError('image'); return; } // undecodable photo: retake, never a retry that fails again
+      }
+      const r = await analyzeIngredientPhoto(base64, prefs, { barcode: barcode ?? null, apiKey });
       if (r.product.source === 'label-ai') {
         // Example results are never saved: they would cache fake data under a real barcode.
         saveScan(r.product, r.report.verdict).then(() => toast({ message: 'Saved to History' }), () => toast({ message: "Couldn't save to History" }));
       }
       if (live.current) setResult(r);
     } catch (e) {
-      if (live.current) setError(e instanceof LabelError ? e.code : 'network');
+      if (live.current) setError(e instanceof LabelError ? e.code : 'invalid-response');
     } finally {
       clearTimeout(slowTimer);
       if (live.current) setReading(false);

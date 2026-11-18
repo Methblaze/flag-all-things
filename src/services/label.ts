@@ -8,7 +8,7 @@ import { EXAMPLE_LABEL_PRODUCT } from '@/services/example-label';
 import { getApiKey } from '@/services/storage';
 
 export class LabelError extends Error {
-  constructor(public code: 'unreadable' | 'bad-key' | 'network' | 'refused' | 'invalid-response') {
+  constructor(public code: 'unreadable' | 'bad-key' | 'network' | 'busy' | 'rejected' | 'refused' | 'invalid-response') {
     super(code);
     this.name = 'LabelError';
   }
@@ -68,8 +68,13 @@ export async function analyzeIngredientPhoto(
       }],
     });
   } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) throw new LabelError('bad-key');
+    // Most specific first: the SDK's error classes subclass each other.
     if (e instanceof Anthropic.APIConnectionError) throw new LabelError('network');
+    if (e instanceof Anthropic.AuthenticationError) throw new LabelError('bad-key');
+    if (e instanceof Anthropic.RateLimitError || e instanceof Anthropic.InternalServerError) throw new LabelError('busy');
+    if (e instanceof Anthropic.APIError) throw new LabelError(typeof e.status === 'number' && e.status >= 500 ? 'busy' : 'rejected');
+    // parse() throws a bare AnthropicError when the output is truncated, off-schema or not JSON.
+    if (e instanceof Anthropic.AnthropicError) throw new LabelError('invalid-response');
     throw e;
   }
 

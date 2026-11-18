@@ -17,3 +17,11 @@ test('scan gate passes a code once per window', () => {
   expect(gate('96385074', 600)).toBe(true);
   expect(gate('5701234567899', 3601)).toBe(true);
 });
+
+test('rearm restarts the window when the camera resumes (no bounce back to the product)', () => {
+  const gate = createScanGate(3000);
+  expect(gate('5701234567899', 0)).toBe(true);
+  gate.rearm(10_000); // user returns to Scan 10 s later with the pack still in view
+  expect(gate('5701234567899', 10_500)).toBe(false);
+  expect(gate('5701234567899', 13_001)).toBe(true);
+});
