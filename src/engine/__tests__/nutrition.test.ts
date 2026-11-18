@@ -3,7 +3,7 @@ import { makeProduct } from '@/engine/__fixtures__/make';
 import { nutritionRule } from '@/engine/rules/nutrition';
 
 const n = (o: Partial<Product['nutrition']>) => ({ energyKcal: null, sugars: null, saturatedFat: null, salt: null, fiber: null, protein: null, ...o });
-test('salt 1.6 g food → high', () => expect(nutritionRule(makeProduct({ nutrition: n({ salt: 1.6 }) }), DEFAULT_PREFS)).toEqual([expect.objectContaining({ id: 'nutrition:salt-high', severity: 'warning', detail: '1.6 g per 100 g — above the 1.5 g "high" level.' })]));
+test('salt 1.6 g food → high', () => expect(nutritionRule(makeProduct({ nutrition: n({ salt: 1.6 }) }), DEFAULT_PREFS)).toEqual([expect.objectContaining({ id: 'nutrition:salt-high', severity: 'warning', detail: '1.6 g per 100 g, above the 1.5 g "high" level.' })]));
 test('salt exactly 1.5 → not high', () => expect(nutritionRule(makeProduct({ nutrition: n({ salt: 1.5 }) }), DEFAULT_PREFS)).toEqual([]));
 test('drink sugars 11.3 → high, 11.2 → not', () => {
   expect(nutritionRule(makeProduct({ isBeverage: true, nutrition: n({ sugars: 11.3 }) }), DEFAULT_PREFS)[0].id).toBe('nutrition:sugars-high');

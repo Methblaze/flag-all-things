@@ -9,14 +9,14 @@ export const dietRule: Rule = (p, prefs) => {
   if (prefs.diet !== 'none') {
     const want = prefs.diet; // 'vegan' | 'vegetarian'
     const status = p.diet[want];
-    if (status === false) flags.push(flag(`not-${want}`, 'danger', `Not ${want} — on your alert list`, `The ingredients include animal products that are not ${want}.`, true));
+    if (status === false) flags.push(flag(`not-${want}`, 'danger', `Not ${want} (on your alert list)`, `The ingredients include animal products that are not ${want}.`, true));
     else if (status === null) flags.push(flag(`${want}-unknown`, 'warning', `${want === 'vegan' ? 'Vegan' : 'Vegetarian'} status unknown`, 'Check the ingredient list on the pack.', true));
     else flags.push(flag(want, 'good', want === 'vegan' ? 'Vegan' : 'Vegetarian', 'Matches your diet.'));
   }
   const palm = p.diet.palmOil ?? (p.ingredientsText ? mentionsPalmOil(p.ingredientsText) : null);
   if (palm) {
     flags.push(prefs.avoidPalmOil
-      ? flag('palm-oil', 'danger', 'Contains palm oil — on your alert list', 'Palm oil is listed in the ingredients.', true)
+      ? flag('palm-oil', 'danger', 'Contains palm oil (on your alert list)', 'Palm oil is listed in the ingredients.', true)
       : flag('palm-oil', 'info', 'Contains palm oil', 'Palm oil is listed in the ingredients.'));
   }
   if (p.ecoscore) {

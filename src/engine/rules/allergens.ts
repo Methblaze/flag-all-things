@@ -12,14 +12,14 @@ export const allergensRule: Rule = (p, prefs) => {
   const mine = (k: AllergenKey) => prefs.allergens.includes(k);
   const flags: Flag[] = [
     ...contains.map(k => mine(k)
-      ? flag(k, 'danger', `Contains ${ALLERGEN_LABELS[k]} — on your alert list`, 'Listed in the ingredients.', true)
+      ? flag(k, 'danger', `Contains ${ALLERGEN_LABELS[k]} (on your alert list)`, 'Listed in the ingredients.', true)
       : flag(k, 'info', `Contains ${ALLERGEN_LABELS[k]}`, 'Listed in the ingredients.', false)),
     ...traces.map(k => flag(`${k}-traces`, mine(k) ? 'warning' : 'info', `May contain traces of ${ALLERGEN_LABELS[k]}`,
       'The pack warns of possible cross-contamination.', mine(k))),
   ];
   // Missing data is never "no allergens" (design doc anti-goal).
   if (!p.allergenDataKnown && prefs.allergens.length > 0) {
-    flags.push(flag('unknown', 'warning', 'Allergen info missing — check the pack', 'This product has no ingredient or allergen data on record.', true));
+    flags.push(flag('unknown', 'warning', 'Allergen info missing. Check the pack', 'This product has no ingredient or allergen data on record.', true));
   }
   return flags;
 };

@@ -16,7 +16,7 @@ import { useTheme } from '@/theme/useTheme';
 
 const ERRORS: Record<Extract<BarcodeCheck, { ok: false }>['reason'], string> = {
   empty: 'Enter a barcode',
-  checksum: "That barcode doesn't add up — check the last digit",
+  checksum: "That barcode doesn't add up. Check the last digit.",
   length: 'Barcodes are 8, 12 or 13 digits',
   'not-digits': 'Use digits only',
 };
@@ -107,20 +107,20 @@ export default function ScanScreen() {
       ) : (
         <View style={styles.denied}>
           <AppText variant="title" accessibilityRole="header">Look up a product</AppText>
-          <AppText color={c.muted}>{cameraAvailable === false ? 'No camera here — type the barcode under the stripes.' : 'Camera access is off.'}</AppText>
+          <AppText color={c.muted}>{cameraAvailable === false ? 'No camera here. Type the barcode under the stripes.' : 'Camera access is off.'}</AppText>
           {permission?.status === 'denied' && !isWeb ? <Button kind="text" label="Open settings" onPress={() => Linking.openSettings()} fullWidth={false} /> : null}
         </View>
       )}
 
       {weighed ? (
         <Banner tone="info" testID="weighed-notice">
-          <AppText>{"This is a store's own price label — scan the ingredient label instead"}</AppText>
+          <AppText>{"This is a store's own price label. Scan the ingredient label instead."}</AppText>
           <Button kind="secondary" label="Scan ingredient label" onPress={() => { setWeighed(false); router.push('/label'); }} fullWidth={false} />
         </Banner>
       ) : null}
 
       <View style={styles.manual}>
-        <TextField ref={field} testID="manual-entry" label="Barcode" placeholder="5701234567899" value={input} error={error}
+        <TextField ref={field} testID="manual-entry" label="Barcode" placeholder="8 or 13 digits" value={input} error={error}
           hint={isWeb ? '/' : undefined} keyboardType="number-pad" inputMode="numeric" autoCorrect={false} returnKeyType="search"
           onChangeText={t => { setInput(t); setError(null); setWeighed(false); }} onSubmitEditing={submit}
           trailing={<Button kind={cameraUsable && granted ? 'secondary' : 'primary'} label="Look up" onPress={submit} disabled={digits < 8} fullWidth={false} />} />

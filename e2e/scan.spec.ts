@@ -15,7 +15,7 @@ test('manual entry and examples are visible without a camera', async ({ page }) 
 test('a bad check digit is caught inline and the text is kept', async ({ page }) => {
   await page.getByTestId('manual-entry').fill('5701234567890');
   await page.getByRole('button', { name: 'Look up' }).click();
-  await expect(page.getByText("That barcode doesn't add up — check the last digit")).toBeVisible();
+  await expect(page.getByText("That barcode doesn't add up. Check the last digit.")).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByTestId('manual-entry')).toHaveValue('5701234567890');
 });
@@ -23,7 +23,7 @@ test('a bad check digit is caught inline and the text is kept', async ({ page })
 test('a store weighed-goods label points to the label scan', async ({ page }) => {
   await page.getByTestId('manual-entry').fill('2001234001502');
   await page.getByRole('button', { name: 'Look up' }).click();
-  await expect(page.getByText("This is a store's own price label — scan the ingredient label instead")).toBeVisible();
+  await expect(page.getByText("This is a store's own price label. Scan the ingredient label instead.")).toBeVisible();
   await expect(page.getByRole('button', { name: 'Scan ingredient label' })).toBeVisible();
 });
 

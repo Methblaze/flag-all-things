@@ -13,7 +13,7 @@ test('without a key, a chosen photo gives an example result that is not saved', 
   await (await chooser).setFiles(join(__dirname, 'fixtures/label.jpg'));
 
   await page.getByRole('button', { name: 'Read label' }).click();
-  await expect(page.getByText('Example result — add your key in Settings to read real labels')).toBeVisible();
+  await expect(page.getByText('Example result. Add your key in Settings to read real labels.')).toBeVisible();
   await expect(page.getByTestId('verdict')).toBeVisible();
 
   const history = await page.evaluate(() => localStorage.getItem('fat:history:v1'));

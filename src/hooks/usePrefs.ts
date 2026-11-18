@@ -24,7 +24,7 @@ export function usePrefs() {
     const prev = latest.current;
     latest.current = next;
     setState(next);
-    savePrefs(next).catch(() => { latest.current = prev; setState(prev); toast({ message: "Couldn't save — try again" }); });
+    savePrefs(next).catch(() => { latest.current = prev; setState(prev); toast({ message: "Couldn't save. Try again." }); });
   }, [toast]);
 
   return { prefs, setPrefs, loaded };

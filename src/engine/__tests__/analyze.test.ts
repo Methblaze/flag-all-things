@@ -3,7 +3,7 @@ import { makeProduct } from '@/engine/__fixtures__/make';
 import { analyze } from '@/engine/analyze';
 
 test('no ingredients and no nutrition → unknown', () => expect(analyze(makeProduct({ name: 'X' }), DEFAULT_PREFS)).toMatchObject({ verdict: 'unknown', headline: 'Not enough data to judge' }));
-test('personal allergen → avoid, headline from top flag', () => expect(analyze(makeProduct({ ingredientsText: 'Mælk', allergens: ['milk'], allergenDataKnown: true, nova: 4 }), { ...DEFAULT_PREFS, allergens: ['milk'] })).toMatchObject({ verdict: 'avoid', headline: 'Contains milk — on your alert list' }));
+test('personal allergen → avoid, headline from top flag', () => expect(analyze(makeProduct({ ingredientsText: 'Mælk', allergens: ['milk'], allergenDataKnown: true, nova: 4 }), { ...DEFAULT_PREFS, allergens: ['milk'] })).toMatchObject({ verdict: 'avoid', headline: 'Contains milk (on your alert list)' }));
 test('warnings only → caution', () => expect(analyze(makeProduct({ ingredientsText: 'x', nova: 4 }), DEFAULT_PREFS).verdict).toBe('caution'));
 test('good signals, no warnings → good', () => expect(analyze(makeProduct({ ingredientsText: 'Rugmel', nova: 1, nutriscore: 'a' }), DEFAULT_PREFS).verdict).toBe('good'));
 test('info only → ok', () => expect(analyze(makeProduct({ ingredientsText: 'x', nova: 3 }), DEFAULT_PREFS).verdict).toBe('ok'));

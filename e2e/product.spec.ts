@@ -47,7 +47,7 @@ test('a milk alert turns whole milk into Avoid', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('fat:prefs:v1', JSON.stringify({ allergens: ['milk'] })));
   await page.goto('/product/5700426101019');
   await expect(page.getByTestId('verdict')).toContainText('Avoid');
-  await expect(page.getByTestId('headline')).toHaveText('Contains milk — on your alert list');
+  await expect(page.getByTestId('headline')).toHaveText('Contains milk (on your alert list)');
 });
 
 test('a name-only record is Unknown and offers the label scan', async ({ page }) => {

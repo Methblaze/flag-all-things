@@ -87,7 +87,7 @@ export default function LabelScreen() {
           {photo ? <Image source={photo.uri} style={styles.thumbSmall} contentFit="cover" alt="Your label photo" /> : null}
           {result.product.source === 'example' ? (
             <Banner tone="info" testID="example-banner">
-              <AppText variant="meta">Example result — add your key in Settings to read real labels</AppText>
+              <AppText variant="meta">Example result. Add your key in Settings to read real labels.</AppText>
               <Button kind="text" label="Open Settings" onPress={() => router.navigate('/settings')} fullWidth={false} />
             </Banner>
           ) : null}

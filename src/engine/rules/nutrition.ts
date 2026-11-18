@@ -23,7 +23,7 @@ export const nutritionRule: Rule = (p) => {
   for (const h of HIGH) {
     const v = p.nutrition[h.key];
     const limit = p.isBeverage ? h.drink : h.food;
-    if (v !== null && v > limit) flags.push(flag(h.id, 'warning', h.title, `${fmt(v)} g per ${unit} — above the ${fmt(limit)} g "high" level.`, FSA_SOURCE));
+    if (v !== null && v > limit) flags.push(flag(h.id, 'warning', h.title, `${fmt(v)} g per ${unit}, above the ${fmt(limit)} g "high" level.`, FSA_SOURCE));
   }
   if (p.ingredientsText && sugarIsMainIngredient(p.ingredientsText)) {
     flags.push(flag('sugar-main', 'warning', 'Sugar is a main ingredient', 'Sugar is listed among the first two ingredients, which are ordered by weight.', ORDER_SOURCE));
@@ -35,7 +35,7 @@ export const nutritionRule: Rule = (p) => {
   // Fibre is meaningless for drinks; only flag food.
   const fiber = p.nutrition.fiber;
   if (!p.isBeverage && fiber !== null && fiber < FIBRE_SOURCE_LEVEL) {
-    flags.push(flag('fiber-low', 'info', 'Low in fibre', `${fmt(fiber)} g per 100 g — below the 3 g "source of fibre" level.`, FIBRE_SOURCE));
+    flags.push(flag('fiber-low', 'info', 'Low in fibre', `${fmt(fiber)} g per 100 g, below the 3 g "source of fibre" level.`, FIBRE_SOURCE));
   }
   return flags;
 };
