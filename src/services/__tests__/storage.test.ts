@@ -4,7 +4,6 @@ import { DEFAULT_PREFS } from '@/domain/types';
 import { makeProduct } from '@/engine/__fixtures__/make';
 import { findCached, getApiKey, isStale, loadHistory, loadPrefs, removeScan, restoreScan, saveScan, setApiKey } from '@/services/storage';
 
-jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 jest.mock('expo-secure-store', () => {
   const mem = new Map<string, string>();
   return {

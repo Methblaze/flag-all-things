@@ -58,6 +58,9 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/e2e/"
+    ],
+    "setupFiles": [
+      "./jest.setup.ts"
     ]
   }
 }
