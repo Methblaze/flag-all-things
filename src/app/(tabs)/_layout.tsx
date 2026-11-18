@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ComponentProps } from 'react';
 
-import { space, type } from '@/theme/tokens';
+import { type } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 const tab = (name: ComponentProps<typeof Feather>['name']) =>
@@ -19,8 +19,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: c.ink,
         tabBarInactiveTintColor: c.muted,
-        // Default 49pt bar clips 13pt labels; size it to icon + label + inset.
-        tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.border, borderTopWidth: 1, height: 60 + insets.bottom, paddingTop: space.s2 - 2, paddingBottom: insets.bottom + space.s2 - 2 },
+        // Default 49pt bar clips 13pt labels: item padding (10) + icon box (28) + label (16) needs 60pt.
+        tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.border, borderTopWidth: 1, height: 60 + insets.bottom, paddingTop: 0, paddingBottom: insets.bottom },
         tabBarLabelStyle: label,
         sceneStyle: { backgroundColor: c.canvas },
       }}
