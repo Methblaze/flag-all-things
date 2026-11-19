@@ -85,9 +85,9 @@ function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }
         style={({ pressed }) => [styles.rowMain, pressed && { backgroundColor: c.canvas }]}
       >
         {product.imageUrl ? (
-          <Image source={product.imageUrl} style={[styles.thumb, { backgroundColor: c.neutral.tint }]} contentFit="cover" transition={motion.dur.base} alt="" />
+          <Image source={product.imageUrl} style={[styles.thumb, { backgroundColor: c.secondary }]} contentFit="cover" transition={motion.dur.base} alt="" />
         ) : (
-          <View style={[styles.thumb, styles.thumbEmpty, { backgroundColor: c.neutral.tint }]}><Feather name="package" size={20} color={c.muted} /></View>
+          <View style={[styles.thumb, styles.thumbEmpty, { backgroundColor: c.secondary }]}><Feather name="package" size={20} color={c.muted} /></View>
         )}
         <View style={styles.text}>
           <AppText numberOfLines={2}>{name}</AppText>

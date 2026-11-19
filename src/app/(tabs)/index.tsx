@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } 
 import { AppState, Linking, Platform, Pressable, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 
-import { Button } from '@/components/Button';
+import { Button, usePressScale } from '@/components/Button';
 import { AppText, Screen } from '@/components/primitives';
 import { Banner } from '@/components/severity';
 import { TextField } from '@/components/TextField';
@@ -144,12 +144,7 @@ export default function ScanScreen() {
         <View style={styles.examples} testID="example-barcodes">
           <AppText variant="section" accessibilityRole="header">Try a Danish example</AppText>
           <View style={styles.chips}>
-            {EXAMPLE_BARCODES.map(e => (
-              <Pressable key={e.code} testID={`example-${e.code}`} accessibilityRole="link" accessibilityLabel={`${e.label}, barcode ${e.code}`}
-                onPress={() => go(e.code)} style={({ pressed }) => [styles.chip, { borderColor: c.borderStrong, backgroundColor: pressed ? c.canvas : c.surface }]}>
-                <AppText>{e.label}</AppText>
-              </Pressable>
-            ))}
+            {EXAMPLE_BARCODES.map(e => <ExampleChip key={e.code} code={e.code} label={e.label} onPress={() => go(e.code)} />)}
           </View>
         </View>
       ) : null}
@@ -157,9 +152,24 @@ export default function ScanScreen() {
   );
 }
 
+/** Chips are small (<200pt), so they press like buttons: a 0.97 spring scale, not a fade (Charles, anticipation). */
+function ExampleChip({ code, label, onPress }: { code: string; label: string; onPress: () => void }) {
+  const c = useTheme();
+  const press = usePressScale();
+  return (
+    <Animated.View style={press.style}>
+      <Pressable testID={`example-${code}`} accessibilityRole="link" accessibilityLabel={`${label}, barcode ${code}`}
+        onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut} style={[styles.chip, { backgroundColor: c.tertiary }]}>
+        <AppText color={c.onTertiary}>{label}</AppText>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 function Reticle() {
   const c = useTheme();
-  const corner = { position: 'absolute' as const, width: 28, height: 28, borderColor: c.onScrim };
+  // Lemon reads on the dark camera feed (13.6:1) and marks where to aim: the scan's one highlight.
+  const corner = { position: 'absolute' as const, width: 28, height: 28, borderColor: c.tertiary };
   return (
     <View pointerEvents="none" style={styles.reticle}>
       <View style={[corner, { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: radius.sm }]} />
@@ -182,5 +192,5 @@ const styles = StyleSheet.create({
   manual: { gap: space.s2 },
   examples: { gap: space.s3 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
-  chip: { minHeight: layout.target, justifyContent: 'center', paddingHorizontal: space.s4, borderWidth: 1, borderRadius: radius.sm },
+  chip: { minHeight: layout.target, justifyContent: 'center', paddingHorizontal: space.s4, borderRadius: radius.sm },
 });

@@ -28,7 +28,7 @@ export function BackBar() {
 
 function Block({ width, height, round = radius.sm }: { width: DimensionValue; height: number; round?: number }) {
   const c = useTheme();
-  return <View style={{ width, height, borderRadius: round, backgroundColor: c.neutral.tint }} />;
+  return <View style={{ width, height, borderRadius: round, backgroundColor: c.secondary }} />;
 }
 
 /** Same shapes and heights as the summary card and section headers, so nothing shifts on load (§4.6). */

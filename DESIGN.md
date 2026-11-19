@@ -9,7 +9,8 @@ Stage 3 of 6. This is the single source of visual truth: screens use only these 
 - **Base style: Minimalism and Swiss** (from the UI/UX Pro Max search; WCAG AAA-friendly, low complexity).
   - A warm off-white canvas, near-black ink and a strict type hierarchy.
   - Spacing does the grouping; borders are used only where spacing can't.
-- **Colour carries meaning, never decoration.** The four severity colours are the only saturated colours in the app. There is no brand accent hue. The primary action is solid ink, so a call-to-action is never mistaken for a severity.
+- **Colour carries meaning, never decoration.** The four severity colours carry the verdicts. The primary action is solid ink, so a call-to-action is never mistaken for a severity.
+- **Brand: ink and lemon (palette C, chosen 2026-11-19).** Ink is the primary. Warm sand (`secondary`) carries structure: the tab bar and control tracks on a sand-tinted canvas. Lemon (`tertiary`) is the one rare highlight: the active tab, the scan reticle and the example chips. Lemon's hue sits 36° from amber and is far lighter, so it never reads as a warning.
 - **Rejected:**
   - The generator's first match, "Vibrant & Block-based" plus an orange call-to-action. It was matched to a landing page. The orange would collide with *warning*, and loudness works against the "not everything is red" anti-goal.
   - Glassmorphism, gradients and emoji icons.
@@ -22,14 +23,28 @@ Every pair below was checked with a WCAG contrast script (2026-11-18). Body and 
 
 | Token | Light | Dark | Use | Contrast (light / dark) |
 |---|---|---|---|---|
-| `canvas` | `#F6F6F3` | `#101113` | Screen background | — |
-| `surface` | `#FFFFFF` | `#1A1C20` | Cards, sections, inputs, tab bar | — |
+| `canvas` | `#F6F4EE` | `#12110E` | Screen background (warm sand tint) | — |
+| `surface` | `#FFFFFF` | `#1C1B17` | Cards, sections, inputs | — |
 | `ink` | `#16181D` | `#F1F1EE` | Primary text, primary button fill, focus ring | 16.4 / 16.7 on canvas |
-| `muted` | `#4F5562` | `#A7ACB6` | Secondary text, meta, placeholders | 6.9 / 8.3 on canvas |
-| `border` | `#DEDED8` | `#2C2F35` | Hairline dividers (decorative only) | — |
-| `borderStrong` | `#8C9099` | `#6B707A` | Input borders, outlined buttons | 3.2 / 3.4 on surface |
+| `muted` | `#4F5562` | `#ABA696` | Secondary text, meta, placeholders | 6.8 / 7.8 on canvas, 6.1 / 6.2 on secondary |
+| `border` | `#E2DDD0` | `#2E2C26` | Hairline dividers (decorative only) | — |
+| `borderStrong` | `#8C9099` | `#6F6B60` | Input borders, outlined buttons | 3.2 / 3.2 on surface |
 | `onInk` | `#FFFFFF` | `#16181D` | Text on the primary button | 17.8 / 15.1 |
 | `scrim` | `rgba(16,17,19,0.6)` | `rgba(0,0,0,0.6)` | Behind the camera hint and the torch button | — |
+
+### 2.1b Brand roles
+
+| Token | Light | Dark | Use | Contrast (light / dark) |
+|---|---|---|---|---|
+| `secondary` | `#ECE7DA` | `#28261F` | Structural sand: tab bar, segmented-control track | ink 14.4 / 13.4 on it |
+| `onSecondary` | `#4A4436` | `#D8D1BE` | Text and icons on `secondary` when ink is too loud | 7.8 / 9.9 |
+| `tertiary` | `#E2F56A` | `#D7EC5A` | Lemon highlight: active-tab pill, scan reticle, example chips | 14.8 / 13.6 for `onTertiary`; 14.8 / 13.6 against the dark camera |
+| `onTertiary` | `#16181D` | `#16181D` | Text and icons on lemon | — |
+
+**Rules:**
+1. **Lemon is a fill, never a line on light.** It is only about 1.2:1 against white, so use it only behind `onTertiary` content or on dark backgrounds (the camera). Never use it for text, icons or borders on canvas or surface.
+2. **Lemon stays rare,** a few spots per screen, so it keeps its pull. It never marks a severity, a verdict or a destructive action.
+3. **Every severity colour still passes on sand** (lowest: good `fg` 4.76:1 on `secondary`), so severity marks may sit on the tab bar or control tracks.
 
 ### 2.2 Severity (semantic)
 
@@ -155,8 +170,8 @@ Each severity has four tokens:
 ## 7. Imagery
 
 - **Product photos come from OFF's `image_front_small_url`,** shown 48×48 in History and 56×56 in the Result meta line, with `radius.sm`.
-  - While loading: a `neutral.tint` block, fading in over 200 ms once the image arrives.
-  - Missing image: the `package` Feather glyph on `neutral.tint`. Never a broken image.
+  - While loading: a `secondary` (sand) block, fading in over 200 ms once the image arrives.
+  - Missing image: the `package` Feather glyph on `secondary`. Never a broken image.
 - **Label-photo thumbnail:** the user's own photo, 64×64, with `radius.sm`.
 - **No stock illustration and no cartoon empty states** (anti-slop). Empty states are type plus one icon plus one action.
 
@@ -193,7 +208,7 @@ Each severity has four tokens:
 | **Chip (example barcode, E-number)** | `surface`, 1 pt `borderStrong`, `radius.sm`, height 44, `body`. The E-number chip has a trailing `x` with a 44 pt target. |
 | **Tab bar** | `surface` with a 1 pt top `border`. Icon plus `tag` label, always visible (never icon-only). Active: `ink`. Inactive: `muted`. |
 | **Toast** | Elevation 2, `radius.lg`, `ink` background with `onInk` text in light mode (inverted for emphasis), the action as `bodyStrong` underlined. It sits `s3` above the tab bar. |
-| **Skeleton** | `neutral.tint` blocks at the final sizes and radii, with a shimmer sweep (1.5 s, linear) that is static under reduced motion. |
+| **Skeleton** | `secondary` (sand) blocks at the final sizes and radii, with a shimmer sweep (1.5 s, linear) that is static under reduced motion. |
 | **Viewfinder** | Full-width camera with a `radius.lg` mask. Corner brackets are 3 pt `#FFFFFF` strokes. The hint pill is `scrim` + white `meta`. The torch button is a 44 pt `scrim` circle, top-right inside the safe area. |
 | **History row** | Height ≥ 64. Thumbnail 48, then name (`body`, 2 lines max) and brand (`meta`, `muted`), with a trailing verdict word and icon in `fg` and the time in `meta`. |
 

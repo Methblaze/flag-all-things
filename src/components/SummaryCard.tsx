@@ -44,10 +44,10 @@ export function SummaryCard({ product, report, status }: { product: Product; rep
       ) : null}
       <View style={[styles.meta, { borderTopColor: c.border }]}>
         {product.imageUrl ? (
-          <Image source={product.imageUrl} style={[styles.thumb, { backgroundColor: c.neutral.tint }]} contentFit="cover"
+          <Image source={product.imageUrl} style={[styles.thumb, { backgroundColor: c.secondary }]} contentFit="cover"
             transition={motion.dur.base} accessibilityIgnoresInvertColors alt={product.name ?? 'Product photo'} />
         ) : (
-          <View style={[styles.thumb, styles.thumbEmpty, { backgroundColor: c.neutral.tint }]}>
+          <View style={[styles.thumb, styles.thumbEmpty, { backgroundColor: c.secondary }]}>
             <Feather name="package" size={22} color={c.muted} />
           </View>
         )}

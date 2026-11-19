@@ -50,7 +50,7 @@ export function Segmented<T extends string>({ label, options, value, onChange, t
   return (
     <View style={styles.segWrap}>
       <AppText variant="meta" color={c.muted}>{label}</AppText>
-      <View accessibilityRole="radiogroup" accessibilityLabel={label} testID={testID} style={[styles.seg, { backgroundColor: c.canvas, borderColor: c.border }]}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={label} testID={testID} style={[styles.seg, { backgroundColor: c.secondary, borderColor: c.border }]}>
         {options.map(o => {
           const selected = o.value === value;
           return (
