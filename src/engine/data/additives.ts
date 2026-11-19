@@ -1,5 +1,6 @@
-// Curated E-number table. `concern: 'high'` only where the cited source supports a general concern.
-// shortcut: drafted 2026-11-18 from EU/EFSA/WHO sources; owner reviews before ship (design doc §15).
+// Curated E-number table. Baseline policy (owner, 2026-11-19): `concern: 'high'` only where EU/DK law or EFSA
+// restricts, bans or requires a warning. Other classifications (e.g. IARC) stay in `why` as a neutral note;
+// users add stricter personal alerts in Settings.
 export type AdditiveGroup =
   | 'colour' | 'preservative' | 'antioxidant' | 'sweetener' | 'emulsifier' | 'thickener'
   | 'flavour-enhancer' | 'acid' | 'other';
@@ -73,7 +74,7 @@ const ROWS: Row[] = [
   ['e301', 'Sodium ascorbate', 'Natriumascorbat', 'antioxidant'],
   ['e306', 'Tocopherols', 'Tocopherol', 'antioxidant', 'Vitamin E.'],
   ['e307', 'Alpha-tocopherol', 'Alfa-tocopherol', 'antioxidant', 'Vitamin E.'],
-  ['e320', 'Butylated hydroxyanisole (BHA)', 'Butylhydroxyanisol', 'antioxidant', 'Classified by IARC as possibly carcinogenic to humans (Group 2B).', 'high', IARC],
+  ['e320', 'Butylated hydroxyanisole (BHA)', 'Butylhydroxyanisol', 'antioxidant', 'Permitted in the EU. IARC lists it as possibly carcinogenic to humans (Group 2B).', undefined, IARC],
   ['e321', 'Butylated hydroxytoluene (BHT)', 'Butylhydroxytoluen', 'antioxidant'],
   ['e322', 'Lecithins', 'Lecithin', 'emulsifier', 'Often from soy or sunflower.'],
   ['e325', 'Sodium lactate', 'Natriumlactat', 'acid'],
@@ -125,7 +126,7 @@ const ROWS: Row[] = [
   ['e920', 'L-cysteine', 'L-cystein', 'other'],
   ['e941', 'Nitrogen', 'Nitrogen', 'other', undefined, undefined, undefined, []],
   ['e950', 'Acesulfame K', 'Acesulfam K', 'sweetener'],
-  ['e951', 'Aspartame', 'Aspartam', 'sweetener', 'IARC classified it as possibly carcinogenic (2B) in 2023; JECFA kept the acceptable daily intake.', 'high', ASPARTAME],
+  ['e951', 'Aspartame', 'Aspartam', 'sweetener', 'Permitted in the EU. IARC classified it as possibly carcinogenic (2B) in 2023; JECFA kept the acceptable daily intake.', undefined, ASPARTAME],
   ['e952', 'Cyclamates', 'Cyclamat', 'sweetener'],
   ['e954', 'Saccharins', 'Saccharin', 'sweetener'],
   ['e955', 'Sucralose', 'Sucralose', 'sweetener'],

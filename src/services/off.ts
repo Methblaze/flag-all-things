@@ -7,8 +7,8 @@ import { Platform } from 'react-native';
 
 import type { AllergenKey, Grade, Product } from '@/domain/types';
 
-// shortcut: placeholder until the public repo exists; must be a URL, never an email (design doc §5).
-export const OFF_CONTACT = 'https://github.com/flag-all-things/flag-all-things';
+// Must be a URL, never an email: it is sent with every OFF request (design doc §5).
+export const OFF_CONTACT = 'https://portfoliokjaer.vercel.app/';
 const BASE = 'https://world.openfoodfacts.org';
 export const OFF_FIELDS = [
   'code', 'product_name', 'product_name_da', 'product_name_en', 'brands', 'image_front_small_url',

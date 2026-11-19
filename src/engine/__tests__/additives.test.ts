@@ -9,3 +9,7 @@ test('user alert → danger', () => expect(additivesRule(makeProduct({ additives
 test('text merge, no duplicates', () => expect(additivesRule(makeProduct({ additives: ['e250'], ingredientsText: 'salt, E250, E330' }), DEFAULT_PREFS).map(f => f.id)).toEqual(['additive:e250', 'additive:e330']));
 test('OFF sub-variant resolves to its base entry', () => expect(additivesRule(makeProduct({ additives: ['e322i'] }), DEFAULT_PREFS)[0].title).toBe('E322i Lecithins'));
 test('detail text has no middle-dot join (Hallmark floor)', () => expect(additivesRule(makeProduct({ additives: ['e250'] }), DEFAULT_PREFS)[0].detail).not.toContain('·'));
+test('baseline: "high" only where EU/DK law or EFSA acts, not IARC alone', () => {
+  for (const code of ['e951', 'e320']) expect(additivesRule(makeProduct({ additives: [code] }), DEFAULT_PREFS)[0].severity).toBe('info');
+  for (const code of ['e102', 'e171', 'e250']) expect(additivesRule(makeProduct({ additives: [code] }), DEFAULT_PREFS)[0].severity).toBe('warning');
+});
