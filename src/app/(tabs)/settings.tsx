@@ -56,7 +56,7 @@ export default function SettingsScreen() {
   const [key, setKey] = useState<string | null>(null);
   const [keyInput, setKeyInput] = useState('');
   const [keyError, setKeyError] = useState<string | null>(null);
-  useEffect(() => { getApiKey().then(setKey); }, []);
+  useEffect(() => { getApiKey().then(setKey, () => setKey(null)); }, []);
   const saveKey = async () => {
     const k = keyInput.trim();
     try { await setApiKey(k); setKey(k); setKeyInput(''); setKeyError(null); }

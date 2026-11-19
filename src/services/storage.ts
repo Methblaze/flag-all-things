@@ -7,7 +7,8 @@ import { DEFAULT_PREFS, type Product, type ScanHistoryItem, type UserPreferences
 export const HISTORY_CAP = 200;
 const HISTORY_KEY = 'fat:history:v1';
 const PREFS_KEY = 'fat:prefs:v1';
-const API_KEY = 'fat:anthropic-key';
+// SecureStore keys may only use letters, digits, '.', '-' and '_' (a ':' throws on iOS).
+const API_KEY = 'fat.anthropic-key';
 const DAY_MS = 86_400_000;
 
 async function readJson<T>(key: string, fallback: T): Promise<T> {

@@ -433,7 +433,7 @@ test('web identifies by query string, native by User-Agent', async () => {
   - `savePrefs(p: UserPreferences): Promise<void>`
   - `getApiKey(): Promise<string | null>`
   - `setApiKey(key: string | null): Promise<void>`
-  - Storage keys: `fat:history:v1`, `fat:prefs:v1`, `fat:anthropic-key`
+  - Storage keys: `fat:history:v1`, `fat:prefs:v1`, `fat.anthropic-key` (SecureStore allows only letters, digits, `.`, `-`, `_`)
 
 - [ ] **Step 1: Write the failing tests.** Mock AsyncStorage with `@react-native-async-storage/async-storage/jest/async-storage-mock` and expo-secure-store with an in-memory `jest.mock`.
 

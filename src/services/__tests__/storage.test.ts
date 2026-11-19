@@ -6,10 +6,12 @@ import { findCached, getApiKey, isStale, loadHistory, loadPrefs, removeScan, res
 
 jest.mock('expo-secure-store', () => {
   const mem = new Map<string, string>();
+  // Mirror the real module's key rule; a lax mock hid an invalid key name that crashed on iOS.
+  const check = (k: string) => { if (!/^[\w.-]+$/.test(k)) throw new Error('Invalid key provided to SecureStore'); };
   return {
-    getItemAsync: async (k: string) => mem.get(k) ?? null,
-    setItemAsync: async (k: string, v: string) => { mem.set(k, v); },
-    deleteItemAsync: async (k: string) => { mem.delete(k); },
+    getItemAsync: async (k: string) => { check(k); return mem.get(k) ?? null; },
+    setItemAsync: async (k: string, v: string) => { check(k); mem.set(k, v); },
+    deleteItemAsync: async (k: string) => { check(k); mem.delete(k); },
   };
 });
 
