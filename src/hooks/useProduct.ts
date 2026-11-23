@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useToast } from '@/components/Toast';
+import { saveWithRetry } from '@/services/retry';
 import type { Product } from '@/domain/types';
 import { analyze } from '@/engine/analyze';
 import { fetchProduct } from '@/services/off';
@@ -34,7 +35,7 @@ export function useProduct(barcode: string) {
       if (result.kind === 'found') {
         // Saved even if the user already left the screen (interaction spec E10).
         const verdict = analyze(result.product, await loadPrefs()).verdict;
-        saveScan(result.product, verdict).catch(() => toast({ message: "Couldn't save to History" }));
+        saveWithRetry(toast, "Couldn't save to History", () => saveScan(result.product, verdict));
       }
       if (!live) return;
       setRefreshing(false);

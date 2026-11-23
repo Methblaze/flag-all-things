@@ -57,3 +57,14 @@ test('a name-only record is Unknown and offers the label scan', async ({ page })
   await expect(page.getByRole('button', { name: 'Scan ingredient label' })).toBeVisible();
   await expect(page.getByText('Not on record').first()).toBeVisible();
 });
+
+test('a cold deep link offers Scan where Back would be; a pushed product gets the system back button', async ({ page }) => {
+  await stubOff(page);
+  await page.goto('/product/5701164710389');
+  await page.getByTestId('verdict').waitFor();
+  await page.getByTestId('home-button').click();
+  await expect(page.getByTestId('example-barcodes')).toBeVisible();
+  await page.getByTestId('example-5741000109151').click();
+  await page.getByTestId('verdict').waitFor();
+  await expect(page.getByTestId('home-button')).toHaveCount(0);
+});

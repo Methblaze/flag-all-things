@@ -1,16 +1,19 @@
-import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { Segmented, ToggleRow } from '@/components/controls';
+import { ChipToggle, Segmented, ToggleRow } from '@/components/controls';
 import { AppText, Card, Screen } from '@/components/primitives';
+import { Icon } from '@/components/Icon';
 import { TextField } from '@/components/TextField';
 import { useToast } from '@/components/Toast';
 import { ALLERGEN_KEYS, type UserPreferences } from '@/domain/types';
 import { lookupAdditive } from '@/engine/data/additives';
 import { ALLERGEN_LABELS } from '@/engine/data/allergens';
 import { usePrefs } from '@/hooks/usePrefs';
+import { setAppearance, useAppearanceChoice, type AppearanceChoice } from '@/theme/appearance';
 import { getApiKey, setApiKey } from '@/services/storage';
 import { layout, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -42,7 +45,8 @@ export default function SettingsScreen() {
   const c = useTheme();
   const toast = useToast();
   const { prefs, setPrefs, loaded } = usePrefs();
-  const set = <K extends keyof UserPreferences>(k: K, v: UserPreferences[K]) => setPrefs({ ...prefs, [k]: v });
+  const appearance = useAppearanceChoice();
+  const set =<K extends keyof UserPreferences>(k: K, v: UserPreferences[K]) => setPrefs({ ...prefs, [k]: v });
 
   const [eInput, setEInput] = useState('');
   const [eError, setEError] = useState<string | null>(null);
@@ -59,7 +63,10 @@ export default function SettingsScreen() {
   useEffect(() => { getApiKey().then(setKey, () => setKey(null)); }, []);
   const saveKey = async () => {
     const k = keyInput.trim();
-    try { await setApiKey(k); setKey(k); setKeyInput(''); setKeyError(null); }
+    try {
+      await setApiKey(k); setKey(k); setKeyInput(''); setKeyError(null);
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); // the card swaps in place; the buzz confirms it
+    }
     catch { setKeyError("Couldn't save the key in this browser. Private browsing may block storage."); }
   };
   const removeKey = async () => {
@@ -70,21 +77,18 @@ export default function SettingsScreen() {
   };
 
   // A toggle tapped before prefs load would save defaults plus one change.
-  if (!loaded) return <Screen><AppText variant="title" accessibilityRole="header">Settings</AppText></Screen>;
+  if (!loaded) return <Screen>{null}</Screen>;
 
   return (
     <Screen>
-      <AppText variant="title" accessibilityRole="header">Settings</AppText>
 
       <Group title="Allergens" description="Products containing these get a red alert.">
-        <Card>
-          {ALLERGEN_KEYS.map((k, i) => (
-            <View key={k} style={i > 0 && [styles.divider, { borderTopColor: c.border }]}>
-              <ToggleRow testID={`pref-allergen-${k}`} label={capitalise(ALLERGEN_LABELS[k])} value={prefs.allergens.includes(k)}
-                onChange={on => set('allergens', on ? [...prefs.allergens, k] : prefs.allergens.filter(a => a !== k))} />
-            </View>
+        <View style={styles.allergens}>
+          {ALLERGEN_KEYS.map(k => (
+            <ChipToggle key={k} testID={`pref-allergen-${k}`} label={capitalise(ALLERGEN_LABELS[k])} value={prefs.allergens.includes(k)}
+              onChange={on => set('allergens', on ? [...prefs.allergens, k] : prefs.allergens.filter(a => a !== k))} />
           ))}
-        </Card>
+        </View>
       </Group>
 
       <Group title="Diet">
@@ -113,7 +117,7 @@ export default function SettingsScreen() {
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove E${code.slice(1)}`} hitSlop={space.s2}
                   onPress={() => set('additiveAlerts', prefs.additiveAlerts.filter(a => a !== code))}
                   style={styles.chipX}>
-                  <Feather name="x" size={18} color={c.ink} />
+                  <Icon name="close" size={16} color={c.ink} weight="semibold" />
                 </Pressable>
               </View>
             ))}
@@ -121,11 +125,16 @@ export default function SettingsScreen() {
         ) : <AppText variant="meta" color={c.muted}>No E-number alerts</AppText>}
       </Group>
 
+      <Group title="Appearance">
+        <Segmented<AppearanceChoice> testID="pref-appearance" label="Theme" value={appearance} onChange={setAppearance}
+          options={[{ value: 'system', label: 'System' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} />
+      </Group>
+
       <Group title="AI label reading" description="Reads ingredient labels for products missing from Open Food Facts, using your own Anthropic API key.">
         {key ? (
           <Card style={styles.keyCard}>
             <View style={styles.keyRow}>
-              <Feather name="check-circle" size={20} color={c.good.fg} />
+              <Icon name="good" size={20} color={c.good.fg} weight="semibold" />
               <View style={styles.shrink}>
                 <AppText variant="bodyStrong">Key saved</AppText>
                 <AppText variant="meta" color={c.muted} tabular>{maskKey(key)}</AppText>
@@ -135,6 +144,10 @@ export default function SettingsScreen() {
           </Card>
         ) : (
           <View style={styles.group}>
+            <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync('https://console.anthropic.com/settings/keys')} style={styles.link}>
+              <AppText variant="meta" style={styles.underline}>Get a key from the Anthropic Console</AppText>
+              <Icon name="external" size={14} color={c.ink} />
+            </Pressable>
             <TextField testID="pref-api-key" label="Anthropic API key" placeholder="sk-ant-…" value={keyInput} error={keyError}
               secureTextEntry autoCapitalize="none" autoCorrect={false} onChangeText={t => { setKeyInput(t); setKeyError(null); }} onSubmitEditing={saveKey} />
             <Button label="Save key" onPress={saveKey} disabled={!keyInput.trim()} helper="Paste a key to save it." />
@@ -149,9 +162,11 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   group: { gap: space.s3 },
   groupHead: { gap: space.s1 },
-  divider: { borderTopWidth: 1 },
+  allergens: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
+  link: { flexDirection: 'row', alignItems: 'center', gap: space.s1, minHeight: layout.target, alignSelf: 'flex-start' },
+  underline: { textDecorationLine: 'underline' },
   chips: { gap: space.s2 },
-  chip: { minHeight: layout.target, flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingLeft: space.s3, borderWidth: 1, borderRadius: radius.sm },
+  chip: { minHeight: layout.target, flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingLeft: space.s3, borderWidth: 1, borderRadius: radius.sm, borderCurve: 'continuous' },
   chipX: { width: layout.target, height: layout.target, alignItems: 'center', justifyContent: 'center', marginLeft: 'auto' },
   shrink: { flex: 1, minWidth: 0 },
   keyCard: { padding: space.s4, gap: space.s2 },

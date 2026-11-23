@@ -1,12 +1,13 @@
-import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
-import { router, useFocusEffect } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { AppState, Linking, Platform, Pressable, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withTiming, type SharedValue } from 'react-native-reanimated';
 
 import { Button, usePressScale } from '@/components/Button';
+import { BrandTitle } from '@/components/header';
+import { Icon } from '@/components/Icon';
 import { AppText, Screen } from '@/components/primitives';
 import { Banner } from '@/components/severity';
 import { TextField } from '@/components/TextField';
@@ -22,13 +23,15 @@ const ERRORS: Record<Extract<BarcodeCheck, { ok: false }>['reason'], string> = {
   'not-digits': 'Use digits only',
 };
 const isWeb = Platform.OS === 'web';
+const LOCK_MS = 160;
 
 export default function ScanScreen() {
   const c = useTheme();
   const [focused, setFocused] = useState(true);
   const gate = useMemo(() => createScanGate(), []);
+  const lock = useSharedValue(0); // 0 aiming, 1 locked onto a code
   // Restart the gate window when the camera resumes, so a pack still in view after Back does not bounce (design §10).
-  useFocusEffect(useCallback(() => { setFocused(true); gate.rearm(Date.now()); return () => setFocused(false); }, [gate]));
+  useFocusEffect(useCallback(() => { setFocused(true); lock.value = 0; gate.rearm(Date.now()); return () => setFocused(false); }, [gate, lock]));
   const { height } = useWindowDimensions();
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraAvailable, setCameraAvailable] = useState<boolean | null>(isWeb ? null : true);
@@ -61,7 +64,9 @@ export default function ScanScreen() {
     if (!check.ok) return; // camera misreads are ignored silently (E9)
     if (check.kind === 'store-weighed') return setWeighed(true);
     if (!isWeb) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    go(check.code);
+    // Lock-on: the lemon corners snap in and the frame flashes, then the result opens, so the scan visibly lands first.
+    lock.value = withTiming(1, { duration: LOCK_MS, easing: motion.ease.out });
+    setTimeout(() => go(check.code), reduced ? 0 : LOCK_MS);
   };
 
   // A failed submit is the one moment that must register: shake the field, buzz, keep focus there.
@@ -91,20 +96,21 @@ export default function ScanScreen() {
 
   return (
     <Screen>
+      <Stack.Screen options={{ headerTitle: () => <BrandTitle /> }} />
       {cameraUsable ? (
         <View style={[styles.viewfinder, { height: viewfinderHeight, backgroundColor: c.ink }]}>
           {showCamera ? (
             <CameraView style={StyleSheet.absoluteFill} facing="back" enableTorch={torch}
               barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a'] }} onBarcodeScanned={onScanned} />
           ) : null}
-          <Reticle />
+          <Reticle lock={lock} />
           {granted ? (
             <View style={[styles.hint, { backgroundColor: c.scrim }]}>
               <AppText variant="meta" color={c.onScrim}>Point at a barcode</AppText>
             </View>
           ) : (
             <View style={styles.ask}>
-              <Feather name="camera" size={32} color={c.onScrim} />
+              <Icon name="camera" size={32} color={c.onScrim} />
               <AppText color={c.onScrim} style={styles.center}>Scan barcodes with your camera.</AppText>
               <View style={styles.askButton}><Button kind="secondary" label="Allow camera" onPress={requestPermission} /></View>
             </View>
@@ -113,7 +119,7 @@ export default function ScanScreen() {
           {granted && !isWeb ? (
             <Pressable accessibilityRole="button" accessibilityLabel={torch ? 'Torch on' : 'Torch off'} aria-pressed={torch}
               onPress={() => setTorch(t => !t)} hitSlop={space.s2} style={[styles.torch, { backgroundColor: c.scrim }]}>
-              <Feather name={torch ? 'zap' : 'zap-off'} size={22} color={c.onScrim} />
+              <Icon name={torch ? 'torchOn' : 'torchOff'} size={22} color={c.onScrim} />
             </Pressable>
           ) : null}
         </View>
@@ -166,17 +172,20 @@ function ExampleChip({ code, label, onPress }: { code: string; label: string; on
   );
 }
 
-function Reticle() {
+function Reticle({ lock }: { lock: SharedValue<number> }) {
   const c = useTheme();
+  const snap = useAnimatedStyle(() => ({ transform: [{ scale: 1 - 0.1 * lock.value }] }));
+  const flash = useAnimatedStyle(() => ({ opacity: 0.25 * lock.value }));
   // Lemon reads on the dark camera feed (13.6:1) and marks where to aim: the scan's one highlight.
   const corner = { position: 'absolute' as const, width: 28, height: 28, borderColor: c.tertiary };
   return (
-    <View pointerEvents="none" style={styles.reticle}>
+    <Animated.View pointerEvents="none" style={[styles.reticle, snap]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: c.tertiary, borderRadius: radius.sm }, flash]} />
       <View style={[corner, { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: radius.sm }]} />
       <View style={[corner, { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: radius.sm }]} />
       <View style={[corner, { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: radius.sm }]} />
       <View style={[corner, { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: radius.sm }]} />
-    </View>
+    </Animated.View>
   );
 }
 

@@ -1,10 +1,10 @@
-import * as Haptics from 'expo-haptics';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useRef } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { useMemo, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { BackBar, ResultSkeleton } from '@/components/chrome';
+import { ResultSkeleton } from '@/components/chrome';
+import { BackFallback } from '@/components/header';
 import { AppText, Screen } from '@/components/primitives';
 import { ResultView } from '@/components/ResultView';
 import { relativeTime } from '@/components/SummaryCard';
@@ -29,22 +29,15 @@ export default function ProductScreen() {
   const sawLoading = useRef(false);
   if (status === 'loading') sawLoading.current = true;
 
-  // One warning haptic per open when the verdict is Avoid (interaction spec §7).
-  const buzzed = useRef(false);
-  useEffect(() => {
-    if (report?.verdict === 'avoid' && !buzzed.current && Platform.OS !== 'web') {
-      buzzed.current = true;
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
-  }, [report?.verdict]);
-
   const metaStatus = product && (refreshing ? 'Updating…'
     : refreshFailed === 'offline' ? `Offline. Saved ${relativeTime(product.fetchedAt)}`
     : refreshFailed === 'busy' ? `Couldn't refresh. Saved ${relativeTime(product.fetchedAt)}` : undefined);
 
   return (
     <Screen>
-      <BackBar />
+      <BackFallback />
+      {/* The bar and the long-press back menu name the product once it is known. */}
+      {product?.name ? <Stack.Screen options={{ title: product.name }} /> : null}
       {/* Never judge with default settings: wait for the user's own prefs (an allergy must not flash Good). */}
       {status === 'loading' || (status === 'ready' && !loaded) ? <ResultSkeleton /> : null}
       {status === 'ready' && loaded && product && report ? <ResultView product={product} report={report} status={metaStatus ?? undefined} reveal={sawLoading.current} /> : null}
@@ -63,7 +56,7 @@ export default function ProductScreen() {
         <View style={styles.problem}>
           <AppText variant="title" accessibilityRole="header">{PROBLEMS[status].title}</AppText>
           <AppText color={c.muted}>{PROBLEMS[status].body}</AppText>
-          <Button label="Try again" icon="rotate-ccw" onPress={retry} />
+          <Button label="Try again" icon="retry" onPress={retry} />
         </View>
       ) : null}
     </Screen>

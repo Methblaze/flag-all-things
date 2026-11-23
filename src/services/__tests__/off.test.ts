@@ -1,4 +1,4 @@
-import { normalizeOff, fetchProduct, EXAMPLE_BARCODES } from '@/services/off';
+import { calmCaps, normalizeOff, fetchProduct, EXAMPLE_BARCODES } from '@/services/off';
 
 const fixture = (name: string) => require(`../__fixtures__/off/${name}.json`);
 
@@ -57,3 +57,12 @@ test('a lookup that never answers times out to offline instead of hanging', asyn
   expect(await fetchProduct('5701234567899', { fetchImpl: hang as unknown as typeof fetch, timeoutMs: 20 })).toEqual({ kind: 'offline' });
   expect(hang).toHaveBeenCalledTimes(2);
 }, 2000);
+
+test('all-caps names are title-cased; mixed case and words with digits are kept', () => {
+  expect(calmCaps('SOL GRYN')).toBe('Sol Gryn');
+  expect(calmCaps('ØKOLOGISK SØDMÆLK')).toBe('Økologisk Sødmælk');
+  expect(calmCaps('COCA-COLA 1,5L')).toBe('Coca-Cola 1,5L');
+  expect(calmCaps('Grovhakket leverpostej')).toBe('Grovhakket leverpostej');
+  expect(calmCaps('OK')).toBe('OK');
+  expect(calmCaps(null)).toBeNull();
+});

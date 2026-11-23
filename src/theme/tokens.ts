@@ -7,8 +7,10 @@ import { Easing } from 'react-native-reanimated';
 const severity = (fg: string, tint: string, solid: string, onSolid: string) => ({ fg, tint, solid, onSolid });
 
 const light = {
-  canvas: '#F6F4EE', surface: '#FFFFFF', ink: '#16181D', muted: '#4F5562',
-  border: '#E2DDD0', borderStrong: '#8C9099', onInk: '#FFFFFF', scrim: 'rgba(16,17,19,0.6)',
+  // Canvas is one step darker than surface (1.16:1, iOS grouped is 1.12:1), so white groups read without an outline.
+  canvas: '#F1EEE6', surface: '#FFFFFF', ink: '#16181D', muted: '#4F5562',
+  // separator: the hairline between rows of a group, inset to the text (1.57:1 on surface; iOS's is 1.71:1).
+  separator: '#D4CEC0', border: '#E2DDD0', borderStrong: '#8C9099', onInk: '#FFFFFF', scrim: 'rgba(16,17,19,0.6)',
   onScrim: '#FFFFFF',
   // Brand (palette C, ink + lemon): sand carries structure, lemon is a rare highlight. Lemon is ~1.2:1 on white,
   // so it is only ever a fill behind onTertiary content or a mark on dark camera, never text or a line on light.
@@ -25,7 +27,7 @@ export type Palette = typeof light;
 
 const dark: Palette = {
   canvas: '#12110E', surface: '#1C1B17', ink: '#F1F1EE', muted: '#ABA696',
-  border: '#2E2C26', borderStrong: '#6F6B60', onInk: '#16181D', scrim: 'rgba(0,0,0,0.6)',
+  separator: '#3D3A32', border: '#2E2C26', borderStrong: '#6F6B60', onInk: '#16181D', scrim: 'rgba(0,0,0,0.6)',
   onScrim: '#FFFFFF',
   secondary: '#28261F', onSecondary: '#D8D1BE', tertiary: '#D7EC5A', onTertiary: '#16181D',
   danger: severity('#FF8F85', '#3A1916', '#FF8F85', '#16181D'),
@@ -37,6 +39,14 @@ const dark: Palette = {
 };
 
 export const palettes = { light, dark };
+
+// iOS Increase Contrast (DESIGN.md §2.1c): the quiet tokens step up; everything else already clears AA comfortably.
+// muted ≥ 8.7:1 on canvas, borderStrong ≥ 5.2:1, separator ~3:1 on surface, in both themes.
+export type ContrastToken = 'muted' | 'borderStrong' | 'separator' | 'border';
+export const highContrast: Record<keyof typeof palettes, Record<ContrastToken, string>> = {
+  light: { muted: '#3D424D', borderStrong: '#5F636C', separator: '#9A9384', border: '#B9B2A3' },
+  dark: { muted: '#CFC9B9', borderStrong: '#9C978A', separator: '#6A6559', border: '#5A564C' },
+};
 
 export const fonts = {
   heading: 'Figtree_700Bold',
@@ -66,7 +76,8 @@ export const z = { content: 0, sticky: 10, tabBar: 20, banner: 30, toast: 50 } a
 
 export const motion = {
   dur: { instant: 100, fast: 150, base: 200, slow: 300 },
-  spring: { press: { damping: 20, stiffness: 400 }, layout: { damping: 26, stiffness: 260 } },
+  // pop: damping ratio ~0.56, a ~10% overshoot for small playful objects (chips, tab pill, verdict icon); never on text blocks.
+  spring: { press: { damping: 20, stiffness: 400 }, layout: { damping: 26, stiffness: 260 }, pop: { damping: 22, stiffness: 380 } },
   pressScale: 0.97,
   // Strong custom curves (Emil Kowalski / Charles Liu): built-in eases are too weak to read as a decision.
   ease: { out: Easing.bezier(0.23, 1, 0.32, 1), inOut: Easing.bezier(0.77, 0, 0.175, 1), in: Easing.bezier(0.55, 0, 1, 0.45) },

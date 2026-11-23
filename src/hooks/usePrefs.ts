@@ -24,7 +24,8 @@ export function usePrefs() {
     const prev = latest.current;
     latest.current = next;
     setState(next);
-    savePrefs(next).catch(() => { latest.current = prev; setState(prev); toast({ message: "Couldn't save. Try again." }); });
+    // Retry re-applies the change optimistically, so the toggle flips back on at once.
+    savePrefs(next).catch(() => { latest.current = prev; setState(prev); toast({ message: "Couldn't save your settings", actionLabel: 'Retry', onAction: () => setPrefs(next) }); });
   }, [toast]);
 
   return { prefs, setPrefs, loaded };

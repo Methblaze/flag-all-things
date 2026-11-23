@@ -1,22 +1,24 @@
-import { Feather } from '@expo/vector-icons';
-import type { ComponentProps, ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useEffect, type ReactNode } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import type { Severity, Verdict } from '@/domain/types';
+import { popIn } from '@/components/Button';
+import { Icon, type IconName } from '@/components/Icon';
 import { AppText } from '@/components/primitives';
 import { radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 type Tone = Severity | 'neutral';
-type IconName = ComponentProps<typeof Feather>['name'];
 
 // Colour is never alone: every severity has an icon shape and a word (interaction spec §5).
 export const SEVERITY: Record<Tone, { icon: IconName; word: string }> = {
-  danger: { icon: 'alert-octagon', word: 'Your alert' },
-  warning: { icon: 'alert-triangle', word: 'Warning' },
+  danger: { icon: 'danger', word: 'Your alert' },
+  warning: { icon: 'warning', word: 'Warning' },
   info: { icon: 'info', word: 'Note' },
-  good: { icon: 'check-circle', word: 'Good' },
-  neutral: { icon: 'help-circle', word: 'Unknown' },
+  good: { icon: 'good', word: 'Good' },
+  neutral: { icon: 'unknown', word: 'Unknown' },
 };
 
 export const VERDICT: Record<Verdict, { word: string; tone: Tone }> = {
@@ -29,17 +31,32 @@ export const VERDICT: Record<Verdict, { word: string; tone: Tone }> = {
 
 export function SeverityIcon({ tone, size = 20 }: { tone: Tone; size?: number }) {
   const c = useTheme();
-  return <Feather name={SEVERITY[tone].icon} size={size} color={c[tone].fg} accessibilityLabel={SEVERITY[tone].word} />;
+  return <Icon name={SEVERITY[tone].icon} size={size} color={c[tone].fg} label={SEVERITY[tone].word} />;
 }
 
-export function VerdictPill({ verdict }: { verdict: Verdict }) {
+// The phone says the verdict too: Avoid errors, Caution warns, Good succeeds; OK and Unknown stay quiet (interaction spec §7).
+const VERDICT_HAPTIC: Partial<Record<Verdict, Haptics.NotificationFeedbackType>> = {
+  avoid: Haptics.NotificationFeedbackType.Error,
+  caution: Haptics.NotificationFeedbackType.Warning,
+  good: Haptics.NotificationFeedbackType.Success,
+};
+// Storyboard: 0ms pill scales 0.9 → 1 on the pop spring; 80ms its icon pops 0.3 → 1. The answer lands, then its symbol.
+const PILL_IN = popIn(0.9);
+const ICON_IN = popIn(0.3, 80);
+
+/** `reveal` pops the pill in when a fresh result replaces the skeleton; a cached one paints at rest. */
+export function VerdictPill({ verdict, reveal = false }: { verdict: Verdict; reveal?: boolean }) {
   const c = useTheme();
   const { word, tone } = VERDICT[verdict];
+  useEffect(() => {
+    const feel = VERDICT_HAPTIC[verdict];
+    if (feel && Platform.OS !== 'web') Haptics.notificationAsync(feel);
+  }, [verdict]);
   return (
-    <View testID="verdict" style={[styles.pill, { backgroundColor: c[tone].solid }]}>
-      <Feather name={SEVERITY[tone].icon} size={24} color={c[tone].onSolid} />
+    <Animated.View testID="verdict" entering={reveal ? PILL_IN : undefined} style={[styles.pill, { backgroundColor: c[tone].solid }]}>
+      <Animated.View entering={reveal ? ICON_IN : undefined}><Icon name={SEVERITY[tone].icon} size={24} color={c[tone].onSolid} weight="bold" /></Animated.View>
       <AppText variant="display" color={c[tone].onSolid}>{word}</AppText>
-    </View>
+    </Animated.View>
   );
 }
 

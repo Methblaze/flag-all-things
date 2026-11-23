@@ -41,6 +41,10 @@ const grade = (v: unknown): Grade | null => (typeof v === 'string' && /^[a-e]$/.
 const allergenKeys = (v: unknown) => [...new Set(tags(v).map(t => OFF_ALLERGENS[t]).filter(Boolean))];
 const triState = (all: string[], yes: string, no: string) => (all.includes(yes) ? true : all.includes(no) ? false : null);
 
+const titleWord = (w: string) => (/\d/.test(w) ? w : w.toLowerCase().replace(/(^|[-/(])(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase()));
+/** Names typed in all caps ("SOL GRYN") read as shouting next to the verdict; title-case them. Mixed case, and words with digits (1,5L), stay as entered. */
+export const calmCaps = (s: string | null) => (s && s === s.toUpperCase() && /\p{Lu}{3}/u.test(s) ? s.split(' ').map(titleWord).join(' ') : s);
+
 export function normalizeOff(raw: unknown, fetchedAt: number): Product | null {
   const r = (raw ?? {}) as Raw;
   const p = r.product as Raw | undefined;
@@ -55,7 +59,7 @@ export function normalizeOff(raw: unknown, fetchedAt: number): Product | null {
 
   return {
     barcode: str(r.code) ?? str(p.code),
-    name: str(p.product_name_da) ?? str(p.product_name) ?? str(p.product_name_en) ?? anyName,
+    name: calmCaps(str(p.product_name_da) ?? str(p.product_name) ?? str(p.product_name_en) ?? anyName),
     brand: str(p.brands)?.split(',')[0].trim() ?? null,
     imageUrl: str(p.image_front_small_url),
     ingredientsText,

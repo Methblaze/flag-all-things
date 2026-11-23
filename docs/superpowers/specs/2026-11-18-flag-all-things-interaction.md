@@ -30,7 +30,7 @@ This document says **how the app behaves**. Visual values (colours, type, radii,
 | Acknowledge within 100 ms | Every press shows its pressed state immediately. Anything that takes longer than 100 ms shows a skeleton or an inline progress indicator by 400 ms (Doherty threshold). |
 | Skeletons, not spinners | Page-level loading uses skeletons that match the final layout. The only spinners are inside buttons, during the label upload. |
 | Stale-while-revalidate | A cached product renders instantly. A background refresh shows the small "Updating…" text in the summary card's meta line, never a blocking state. |
-| Optimistic preferences | Toggles in Settings apply instantly. If saving fails, the toggle snaps back and a toast says "Couldn't save. Try again.". |
+| Optimistic preferences | Toggles in Settings apply instantly. If saving fails, the toggle snaps back and a toast says "Couldn't save your settings" with Retry, which re-applies the change. |
 | Undo, not "are you sure" | Deleting a history item gives an undo toast lasting 5 s. No confirm dialogs anywhere in v1. |
 | No double actions | The scan gate ignores the same code for 3 s. The label "Read label" button goes into its loading state and refuses input while a request is in flight (one at a time). |
 | Errors | Each error message says what happened, what to do next, and offers one action. User input (a typed barcode, a chosen photo) is always kept. |
@@ -115,7 +115,7 @@ Result screen, state "not-found":
        button → loading ("Reading label…"), preview dims, progress copy at 3 s: "Still reading. Labels with small print take longer."
        ├─ no key ............ example result (instant) → Result view with Example banner; NOT saved to History
        │                      (saving would cache fake data under a real barcode)
-       ├─ success ........... Result view (same components as /product), saved to History, toast "Saved to History"
+       ├─ success ........... Result view (same components as /product), saved to History quietly (the result on screen and the verdict haptic confirm it; no success toast)
        ├─ unreadable ........ error: "Couldn't read a label in this photo. Try again with the ingredient list filling the frame." [Retake]
        ├─ bad-key ........... error: "Your API key was rejected." [Open Settings]
        ├─ network ........... error: "No connection. Your photo is kept, so try again when you are online." [Try again]
@@ -154,10 +154,11 @@ History tab
 
 ```
 Sections: Allergens · Diet · Alerts · AI label reading
+  Allergens are wrapping checkbox chips (ink fill + tick when on); other toggles are switch rows
   Toggle → instant (optimistic) → affected results recompute next time they're opened
   E-number alerts: field "Add E-number" accepts "E250", "e 250", "250" → chip "E250 Sodium nitrite" (×)
        invalid → inline "Use an E-number like E250"
-  API key: paste → [Save key] → "Key saved" + masked "sk-ant-…a1b2" + [Remove key]
+  API key: link "Get a key from the Anthropic Console" (console.anthropic.com/settings/keys) → paste → [Save key] → "Key saved" + masked "sk-ant-…a1b2" + [Remove key]
        Remove → key cleared immediately, toast "Key removed" with an Undo button
        Key is not validated on save (that would cost a call); first real read surfaces bad-key (F4)
 ```
@@ -184,7 +185,7 @@ Sections: Allergens · Diet · Alerts · AI label reading
 | E10 | User leaves Result while a fetch is running | The fetch result still goes into History and the cache. No UI update is attempted. |
 | E11 | Preferences changed after a scan | Opening a History item recomputes the verdict. The History row shows the stored verdict until the item is opened again. |
 | E12 | History hits 200 | The oldest entry drops silently. |
-| E13 | Storage write fails (web quota) | The result is still shown. Toast: "Couldn't save to History". |
+| E13 | Storage write fails (web quota) | The result is still shown. Toast: "Couldn't save to History" with Retry (offered again if the retry fails too). |
 | E14 | Very long product names or Danish compounds | Wrap. Never ellipsize the headline or the verdict. History rows cap names at 2 lines with an ellipsis. |
 | E15 | Web on iOS Safari (no torch) | Hide the torch button. Don't show a disabled one. |
 | E16 | Label photo is HEIC or PNG, or huge | Always resize and re-encode to JPEG before upload (plan Task 13). |
@@ -219,7 +220,7 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 | Default | Live camera, a corner-bracket reticle, the hint "Point at a barcode", and the torch button (if supported) at the top-right inside the safe area. |
 | Hover | — Touch surface. |
 | Focus | — The viewfinder isn't focusable. Keyboard users go straight to the manual field. |
-| Active (lock) | Detection gives a success haptic, then the reticle snaps to the code's bounds and ticks (≤120 ms), then navigation follows. |
+| Active (lock) | Detection gives a success haptic, the reticle corners snap 10% inward while a lemon wash flashes inside them (160 ms, ease-out), then navigation follows. |
 | Loading | Camera starting: a dark surface with the reticle outline and "Starting camera…" after 400 ms. |
 | Disabled | Permission denied or no camera: the area collapses and manual entry takes over (F2). |
 | Error | The camera fails mid-session: "Camera stopped" + [Restart camera]. |
@@ -299,7 +300,7 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 | Disabled | — |
 | Error | — |
 | Success | — |
-| Empty | Header reads "Not on record", with a muted icon and no chevron. Not expandable. |
+| Empty | No data: header reads "Not on record" with the Unknown icon. Data but no flags: "Nothing flagged" with a muted tick. Neither has a chevron or expands. Sections share one grouped card with hairline dividers, as in Settings. |
 | Skeleton | Five header bars. |
 
 ### 4.8 Flag row
@@ -328,7 +329,7 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 | Loading | A thumbnail of the photo, the dimmed [Read label] button in its loading state, and the progress copy at 3 s. The rest of the screen stays usable (Back works and cancels the request). |
 | Disabled | [Read label] is disabled until a photo is chosen. |
 | Error | Per-code copy and action (F4). The photo is kept. |
-| Success | The result renders in place, with the toast "Saved to History". |
+| Success | The result renders in place. No toast: success never interrupts. |
 | Empty | No photo yet: the Default state. |
 | Skeleton | After [Read label], the summary-card skeleton appears below the thumbnail. |
 
@@ -357,14 +358,14 @@ Legend: **—** means the state doesn't apply, with the reason given. Pointer *h
 | Active | [Undo] pressed: the item is restored and the toast leaves. |
 | Loading | — |
 | Disabled | — |
-| Error | Undo fails: "Couldn't restore". |
+| Error | Undo fails: "Couldn't restore" with Retry. |
 | Success | It leaves (≤200 ms). |
 | Empty | — |
 | Skeleton | — |
 
 Swiping down dismisses the toast early. A new toast replaces the current one, and the earlier action commits.
 
-### 4.12 Settings controls (switch, segmented, E-number input, API key field)
+### 4.12 Settings controls (allergen chip, switch, segmented, E-number input, API key field)
 
 | State | Switch / segmented | E-number input | API key field |
 |---|---|---|---|
@@ -425,9 +426,10 @@ A non-interactive strip above the summary card. It has an icon, a sentence and a
 | Event | Haptic |
 |---|---|
 | Barcode lock | `notificationAsync(Success)` |
-| A danger verdict revealed | `notificationAsync(Warning)`, once per result open |
-| Switch toggle | `selectionAsync()` |
+| Verdict shown | Avoid `notificationAsync(Error)`, Caution `Warning`, Good `Success`; OK and Unknown none. Once per result shown (fires again only if the verdict changes) |
+| Switch or allergen chip toggle | `selectionAsync()` |
 | Delete / undo | `impactAsync(Light)` |
+| API key saved | `notificationAsync(Success)` |
 | Everything else | None |
 
 ## 8. Copy rules

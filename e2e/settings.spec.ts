@@ -42,3 +42,18 @@ test('E-number alert accepts loose formats', async ({ page }) => {
   await page.getByRole('button', { name: 'Add' }).click();
   await expect(page.getByText('Use an E-number like E250')).toBeVisible();
 });
+
+test('Appearance overrides the system theme, survives a reload, and System hands back to the OS', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/settings');
+  const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(await bg()).toBe('rgb(241, 238, 230)');
+  await page.getByTestId('pref-appearance-dark').click();
+  await expect(page.getByTestId('pref-appearance-dark')).toHaveAttribute('aria-checked', 'true');
+  await expect.poll(bg).toBe('rgb(18, 17, 14)');
+  await page.reload();
+  await expect(page.getByTestId('pref-appearance-dark')).toHaveAttribute('aria-checked', 'true');
+  await expect.poll(bg).toBe('rgb(18, 17, 14)');
+  await page.getByTestId('pref-appearance-system').click();
+  await expect.poll(bg).toBe('rgb(241, 238, 230)');
+});

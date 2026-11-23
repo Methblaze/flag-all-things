@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View, useWindowDimensions, type TextProps, type ViewStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform, ScrollView, StyleSheet, Text, View, useWindowDimensions, type ColorValue, type TextProps, type ViewStyle } from 'react-native';
 
 import { layout, radius, space, type, type TypeToken } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-type AppTextProps = TextProps & { variant?: TypeToken; color?: string; tabular?: boolean; balance?: boolean };
+type AppTextProps = TextProps & { variant?: TypeToken; color?: ColorValue; tabular?: boolean; balance?: boolean };
 
 export function AppText({ variant = 'body', color, tabular, balance, style, ...rest }: AppTextProps) {
   const c = useTheme();
@@ -24,29 +23,31 @@ export function useGutter() {
   return useWindowDimensions().width >= layout.wideFrom ? layout.gutterWide : layout.gutterNarrow;
 }
 
-/** Canvas + safe-area insets + the 600pt centred column (DESIGN.md §4). */
-export function Screen({ children, scroll = true, top = true, contentStyle }: { children: ReactNode; scroll?: boolean; top?: boolean; contentStyle?: ViewStyle }) {
+/** Canvas + the 600pt centred column (DESIGN.md §4). Every screen sits under a native header, so iOS owns the top and
+ *  bottom insets (automatic): content scrolls under the glass bar with its edge effect, never under the clock. */
+export function Screen({ children }: { children: ReactNode }) {
   const c = useTheme();
-  const insets = useSafeAreaInsets();
   const gutter = useGutter();
-  const column: ViewStyle = { width: '100%', maxWidth: layout.maxWidth, alignSelf: 'center', paddingHorizontal: gutter, paddingTop: top ? insets.top + space.s4 : space.s4, paddingBottom: space.s8, gap: space.s6 };
-  return scroll ? (
-    <ScrollView style={{ flex: 1, backgroundColor: c.canvas }} contentContainerStyle={[column, contentStyle]} keyboardShouldPersistTaps="handled">
+  const column: ViewStyle = { width: '100%', maxWidth: layout.maxWidth, alignSelf: 'center', paddingHorizontal: gutter, paddingTop: space.s4, paddingBottom: space.s8, gap: space.s6 };
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: c.canvas }} contentContainerStyle={column} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled">
       {children}
     </ScrollView>
-  ) : (
-    <View style={{ flex: 1, backgroundColor: c.canvas }}>
-      <View style={[column, styles.fill, contentStyle]}>{children}</View>
-    </View>
   );
 }
 
 export function Card({ children, style }: { children: ReactNode; style?: ViewStyle }) {
   const c = useTheme();
-  return <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }, style]}>{children}</View>;
+  return <View style={[styles.card, { backgroundColor: c.surface }, style]}>{children}</View>;
+}
+
+/** The hairline between rows of a group, inset to where the row's text starts (iOS inset-grouped separator). */
+export function Separator({ inset = space.s4 }: { inset?: number }) {
+  const c = useTheme();
+  return <View style={{ height: StyleSheet.hairlineWidth, marginLeft: inset, backgroundColor: c.separator }} />;
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1 },
-  card: { borderWidth: 1, borderRadius: radius.md, borderCurve: 'continuous', overflow: 'hidden' },
+  // No outline: a white group on the darker canvas is the iOS inset-grouped look (DESIGN.md §5).
+  card: { borderRadius: radius.md, borderCurve: 'continuous', overflow: 'hidden' },
 });

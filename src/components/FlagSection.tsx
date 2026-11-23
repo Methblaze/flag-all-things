@@ -1,11 +1,11 @@
-import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import { AppText, Card } from '@/components/primitives';
+import { Icon } from '@/components/Icon';
+import { AppText, Separator } from '@/components/primitives';
 import { SeverityIcon } from '@/components/severity';
 import type { Flag, FlagCategory, Severity } from '@/domain/types';
 import { layout, motion, radius, space } from '@/theme/tokens';
@@ -33,7 +33,7 @@ export function FlagSection({ category, flags, missing }: { category: FlagCatego
   const label = missing ? 'Not on record' : expandable ? summary(flags) : 'Nothing flagged';
 
   return (
-    <Card>
+    <View>
       <Pressable
         testID={`section-${category}`}
         accessibilityRole="button"
@@ -46,7 +46,8 @@ export function FlagSection({ category, flags, missing }: { category: FlagCatego
         <View style={styles.headLeft}>
           <AppText testID={`section-name-${category}`} variant="section">{SECTION_NAMES[category]}</AppText>
           <View style={styles.headMeta}>
-            {worst ? <SeverityIcon tone={worst} size={16} /> : <SeverityIcon tone="neutral" size={16} />}
+            {/* A clean section gets a quiet tick, not the Unknown "?" it once shared with "Not on record". */}
+            {worst ? <SeverityIcon tone={worst} size={16} /> : missing ? <SeverityIcon tone="neutral" size={16} /> : <Icon name="check" size={14} color={c.muted} />}
             <AppText variant="meta" color={c.muted}>{label}</AppText>
           </View>
         </View>
@@ -58,7 +59,7 @@ export function FlagSection({ category, flags, missing }: { category: FlagCatego
           {flags.map(f => <FlagRow key={f.id} flag={f} />)}
         </Animated.View>
       ) : null}
-    </Card>
+    </View>
   );
 }
 
@@ -66,7 +67,9 @@ function FlagRow({ flag }: { flag: Flag }) {
   const c = useTheme();
   const [open, setOpen] = useState(false);
   return (
-    <View style={[styles.row, { borderTopColor: c.border }]}>
+    <View>
+      {/* Inset to the flag's text, past its icon. */}
+      <Separator inset={space.s4 + 20 + space.s3} />
       <Pressable testID={`flag-${flag.id}`} accessibilityRole="button" accessibilityState={{ expanded: open }} aria-expanded={open}
         onPress={() => setOpen(o => !o)} style={({ pressed }) => [styles.rowHead, pressed && { backgroundColor: c.canvas }]}>
         <SeverityIcon tone={flag.severity} />
@@ -83,7 +86,7 @@ function FlagRow({ flag }: { flag: Flag }) {
           {flag.source ? (
             <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(flag.source!.url)} style={styles.link}>
               <AppText variant="meta" style={styles.underline}>{`Source: ${flag.source.label}`}</AppText>
-              <Feather name="external-link" size={14} color={c.ink} />
+              <Icon name="external" size={14} color={c.ink} />
             </Pressable>
           ) : null}
           {flag.personal ? (
@@ -103,14 +106,13 @@ export function Chevron({ open }: { open: boolean }) {
   const turn = useSharedValue(open ? 180 : 0);
   useEffect(() => { turn.value = withTiming(open ? 180 : 0, { duration: motion.dur.base, easing: motion.ease.inOut }); }, [open, turn]);
   const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.value}deg` }] }));
-  return <Animated.View style={style}><Feather name="chevron-down" size={22} color={c.ink} /></Animated.View>;
+  return <Animated.View style={style}><Icon name="chevronDown" size={18} color={c.ink} weight="semibold" /></Animated.View>;
 }
 
 const styles = StyleSheet.create({
   header: { minHeight: layout.row, flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingHorizontal: space.s4, paddingVertical: space.s3 },
   headLeft: { flex: 1, gap: space.s1 },
   headMeta: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  row: { borderTopWidth: 1 },
   rowHead: { minHeight: 52, flexDirection: 'row', gap: space.s3, paddingHorizontal: space.s4, paddingVertical: space.s3, alignItems: 'flex-start' },
   grow: { flex: 1, minWidth: 0, gap: space.s1 },
   tag: { alignSelf: 'flex-start', paddingHorizontal: space.s2, paddingVertical: 2, borderRadius: radius.sm },

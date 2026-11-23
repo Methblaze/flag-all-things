@@ -4,12 +4,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
+import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/Button';
-import { BackBar, ResultSkeleton } from '@/components/chrome';
+import { ResultSkeleton } from '@/components/chrome';
+import { BackFallback } from '@/components/header';
 import { AppText, Screen } from '@/components/primitives';
 import { ResultView } from '@/components/ResultView';
 import { Banner } from '@/components/severity';
 import { useToast } from '@/components/Toast';
+import { saveWithRetry } from '@/services/retry';
 import type { FlagReport, Product } from '@/domain/types';
 import { usePrefs } from '@/hooks/usePrefs';
 import { analyzeIngredientPhoto, LabelError } from '@/services/label';
@@ -73,8 +76,9 @@ export default function LabelScreen() {
       }
       const r = await analyzeIngredientPhoto(base64, prefs, { barcode: barcode ?? null, apiKey });
       if (r.product.source === 'label-ai') {
-        // Example results are never saved: they would cache fake data under a real barcode.
-        saveScan(r.product, r.report.verdict).then(() => toast({ message: 'Saved to History' }), () => toast({ message: "Couldn't save to History" }));
+        // Example results are never saved: they would cache fake data under a real barcode. Success needs no toast:
+        // the result is on screen and the verdict haptic confirms it; only a failure speaks up, with Retry.
+        saveWithRetry(toast, "Couldn't save to History", () => saveScan(r.product, r.report.verdict));
       }
       if (live.current) setResult(r);
     } catch (e) {
@@ -89,7 +93,7 @@ export default function LabelScreen() {
 
   return (
     <Screen>
-      <BackBar />
+      <BackFallback />
       {result ? (
         <>
           {photo ? <Image source={photo.uri} style={styles.thumbSmall} contentFit="cover" alt="Your label photo" /> : null}
@@ -105,7 +109,7 @@ export default function LabelScreen() {
       ) : (
         <>
           <View style={styles.intro}>
-            <AppText variant="title" accessibilityRole="header">Scan ingredient label</AppText>
+            {!photo ? <BrandMark size={48} wave /> : null}
             <AppText>Photograph the ingredient list and nutrition table</AppText>
             <AppText variant="meta" color={c.muted}>Danish varedeklaration or English labels both work.</AppText>
           </View>
@@ -137,7 +141,7 @@ export default function LabelScreen() {
               <View testID="label-pick">
                 <Button label={isWeb ? 'Choose photo' : 'Take photo'} icon="camera" onPress={() => pick(isWeb ? 'library' : 'camera')} />
               </View>
-              {!isWeb ? <Button kind="secondary" label="Choose from library" icon="image" onPress={() => pick('library')} /> : null}
+              {!isWeb ? <Button kind="secondary" label="Choose from library" icon="photo" onPress={() => pick('library')} /> : null}
             </View>
           )}
           {reading ? <ResultSkeleton /> : null}

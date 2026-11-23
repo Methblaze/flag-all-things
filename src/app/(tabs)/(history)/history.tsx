@@ -1,30 +1,30 @@
-import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/Button';
-import { AppText, useGutter } from '@/components/primitives';
+import { Icon } from '@/components/Icon';
+import { AppText, Separator, useGutter } from '@/components/primitives';
 import { SeverityIcon, VERDICT } from '@/components/severity';
-import { relativeTime } from '@/components/SummaryCard';
+import { ProductThumb, relativeTime } from '@/components/SummaryCard';
 import { useToast } from '@/components/Toast';
+import { saveWithRetry } from '@/services/retry';
 import type { ScanHistoryItem } from '@/domain/types';
 import { loadHistory, removeScan, restoreScan } from '@/services/storage';
 import { layout, motion, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 const isWeb = Platform.OS === 'web';
+const TEXT_INSET = space.s3 + 48 + space.s3; // row padding + thumbnail + gap: where the product name starts
 // Remaining rows close the gap, and a restored row opens one: moving in place, ease-in-out.
 const reflow = LinearTransition.duration(motion.dur.base).easing(motion.ease.inOut);
 
 export default function HistoryScreen() {
   const c = useTheme();
   const toast = useToast();
-  const insets = useSafeAreaInsets();
   const gutter = useGutter();
   const [items, setItems] = useState<ScanHistoryItem[] | null>(null);
 
@@ -37,7 +37,7 @@ export default function HistoryScreen() {
   const remove = (item: ScanHistoryItem) => {
     setItems(list => list?.filter(i => i.id !== item.id) ?? null); // optimistic
     removeScan(item.id).catch(() => loadHistory().then(setItems));
-    toast({ message: 'Removed', actionLabel: 'Undo', onAction: () => { restoreScan(item).then(setItems).catch(() => toast({ message: "Couldn't restore" })); } });
+    toast({ message: 'Removed', actionLabel: 'Undo', onAction: () => saveWithRetry(toast, "Couldn't restore", () => restoreScan(item).then(setItems)) });
   };
 
   // Local read is < 50 ms; render nothing rather than flash a skeleton (§4.10).
@@ -47,26 +47,30 @@ export default function HistoryScreen() {
     <Animated.FlatList
       itemLayoutAnimation={reflow}
       style={{ flex: 1, backgroundColor: c.canvas }}
-      contentContainerStyle={[styles.column, { paddingTop: insets.top + space.s4, paddingHorizontal: gutter }]}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={[styles.column, { paddingTop: space.s4, paddingHorizontal: gutter }]}
       data={items}
+      extraData={items.length} // a delete or undo moves the group's ends, so neighbours re-render their corners
       keyExtractor={i => i.id}
-      ListHeaderComponent={<AppText variant="title" accessibilityRole="header" style={styles.title}>History</AppText>}
-      ItemSeparatorComponent={() => <View style={{ height: space.s2 }} />}
+      // One inset group: the hairline sits on surface so the gap never shows canvas, and starts where the text does.
+      ItemSeparatorComponent={() => <View style={{ backgroundColor: c.surface }}><Separator inset={TEXT_INSET} /></View>}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Feather name="clock" size={28} color={c.muted} />
+          <BrandMark size={56} wave />
           <AppText variant="headline">No scans yet</AppText>
           <AppText color={c.muted}>Products you scan are saved here, so you can check them again offline.</AppText>
-          <Button label="Scan a product" icon="maximize" onPress={() => router.navigate('/')} />
+          <Button label="Scan a product" icon="scan" onPress={() => router.navigate('/')} />
         </View>
       }
-      renderItem={({ item }) => <Row item={item} onDelete={() => remove(item)} />}
+      renderItem={({ item, index }) => <Row item={item} first={index === 0} last={index === items.length - 1} onDelete={() => remove(item)} />}
     />
   );
 }
 
-function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }) {
+function Row({ item, first, last, onDelete }: { item: ScanHistoryItem; first: boolean; last: boolean; onDelete: () => void }) {
   const c = useTheme();
+  // Only the group's ends are rounded; the swipe container takes the same corners so the action never pokes past them.
+  const ends = [first && styles.top, last && styles.bottom];
   const { product } = item;
   const v = VERDICT[item.verdict];
   const name = product.name ?? 'Unnamed product';
@@ -74,7 +78,7 @@ function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }
   const row = (
     <View
       testID={`history-row-${item.id}`}
-      style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}
+      style={[styles.row, { backgroundColor: c.surface }, ends]}
       accessibilityActions={[{ name: 'delete', label: 'Remove from history' }]}
       onAccessibilityAction={e => { if (e.nativeEvent.actionName === 'delete') onDelete(); }}
     >
@@ -84,11 +88,7 @@ function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }
         onPress={() => router.push({ pathname: '/product/[barcode]', params: { barcode: item.id } })}
         style={({ pressed }) => [styles.rowMain, pressed && { backgroundColor: c.canvas }]}
       >
-        {product.imageUrl ? (
-          <Image source={product.imageUrl} style={[styles.thumb, { backgroundColor: c.secondary }]} contentFit="cover" transition={motion.dur.base} alt="" />
-        ) : (
-          <View style={[styles.thumb, styles.thumbEmpty, { backgroundColor: c.secondary }]}><Feather name="package" size={20} color={c.muted} /></View>
-        )}
+        <ProductThumb uri={product.imageUrl} size={48} alt="" />
         <View style={styles.text}>
           <AppText numberOfLines={2}>{name}</AppText>
           {product.brand ? <AppText variant="meta" color={c.muted} numberOfLines={1}>{product.brand}</AppText> : null}
@@ -101,7 +101,7 @@ function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }
       </Pressable>
       {isWeb ? (
         <Pressable testID={`delete-${item.id}`} accessibilityRole="button" accessibilityLabel={`Remove ${name} from history`} onPress={onDelete} style={styles.delete}>
-          <Feather name="x" size={20} color={c.muted} />
+          <Icon name="close" size={18} color={c.muted} />
         </Pressable>
       ) : null}
     </View>
@@ -115,10 +115,11 @@ function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }
         <ReanimatedSwipeable
           rightThreshold={40}
           overshootRight={false}
+          containerStyle={[styles.swipe, ends]}
           onSwipeableOpen={onDelete}
           renderRightActions={() => (
             <View style={[styles.swipeAction, { backgroundColor: c.ink }]}>
-              <Feather name="trash-2" size={20} color={c.onInk} />
+              <Icon name="trash" size={20} color={c.onInk} weight="semibold" />
               <AppText variant="bodyStrong" color={c.onInk}>Delete</AppText>
             </View>
           )}
@@ -132,14 +133,14 @@ function Row({ item, onDelete }: { item: ScanHistoryItem; onDelete: () => void }
 
 const styles = StyleSheet.create({
   column: { width: '100%', maxWidth: layout.maxWidth, alignSelf: 'center', paddingBottom: space.s8 },
-  title: { marginBottom: space.s4 },
   empty: { gap: space.s3, alignItems: 'flex-start', paddingTop: space.s4 },
-  row: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.md, borderCurve: 'continuous', minHeight: 64, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', minHeight: 64, overflow: 'hidden' },
+  top: { borderTopLeftRadius: radius.md, borderTopRightRadius: radius.md, borderCurve: 'continuous' },
+  bottom: { borderBottomLeftRadius: radius.md, borderBottomRightRadius: radius.md, borderCurve: 'continuous' },
+  swipe: { overflow: 'hidden' },
   rowMain: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3, padding: space.s3 },
-  thumb: { width: 48, height: 48, borderRadius: radius.sm },
-  thumbEmpty: { alignItems: 'center', justifyContent: 'center' },
   text: { flex: 1, minWidth: 0, gap: 2 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: space.s1, flexWrap: 'wrap', columnGap: space.s2 },
-  swipeAction: { flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingHorizontal: space.s5, marginLeft: space.s2, borderRadius: radius.md },
+  swipeAction: { flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingHorizontal: space.s5 },
   delete: { width: layout.target, height: layout.target, alignItems: 'center', justifyContent: 'center', marginRight: space.s1 },
 });

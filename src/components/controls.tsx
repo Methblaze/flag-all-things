@@ -1,12 +1,15 @@
 import * as Haptics from 'expo-haptics';
 import { useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { LayoutAnimationConfig, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import { popIn, usePressScale } from '@/components/Button';
+import { Icon } from '@/components/Icon';
 import { AppText } from '@/components/primitives';
 import { layout, motion, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
+const POP_ICON = popIn(0.3);
 const TRACK_W = 44;
 const TRACK_H = 26;
 const THUMB = 20;
@@ -45,6 +48,36 @@ export function ToggleRow({ label, description, value, onChange, testID }: { lab
   );
 }
 
+/** A chip that is a checkbox: many fit in a wrapping row, so a long list of on/off choices stays one glance (Miller). The icon swaps in place, so the width never jumps. */
+export function ChipToggle({ label, value, onChange, testID }: { label: string; value: boolean; onChange: (v: boolean) => void; testID?: string }) {
+  const c = useTheme();
+  const press = usePressScale();
+  return (
+    <LayoutAnimationConfig skipEntering>
+      <Animated.View style={press.style}>
+        <Pressable
+          testID={testID}
+          accessibilityRole="checkbox"
+          accessibilityLabel={label}
+          accessibilityState={{ checked: value }}
+          aria-checked={value}
+          onPress={() => { tick(); onChange(!value); }}
+          onPressIn={press.onPressIn}
+          onPressOut={press.onPressOut}
+          style={(s) => [styles.chip, value
+            ? { backgroundColor: c.ink, borderColor: c.ink }
+            : { backgroundColor: ((s as WebState).hovered || s.pressed) ? c.canvas : c.surface, borderColor: c.borderStrong }]}
+        >
+          {/* Plus turns to tick: the new icon mounts and pops in (icon swap, deep scale). */}
+          <Animated.View key={value ? 'on' : 'off'} entering={POP_ICON}><Icon name={value ? 'check' : 'plus'} size={14} color={value ? c.onInk : c.muted} weight="semibold" /></Animated.View>
+          {/* One weight in both states: a bold label would widen the chip and reflow the whole row. */}
+          <AppText color={value ? c.onInk : c.ink}>{label}</AppText>
+        </Pressable>
+      </Animated.View>
+    </LayoutAnimationConfig>
+  );
+}
+
 export function Segmented<T extends string>({ label, options, value, onChange, testID }: { label: string; options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; testID?: string }) {
   const c = useTheme();
   return (
@@ -77,7 +110,8 @@ const styles = StyleSheet.create({
   grow: { flex: 1, minWidth: 0 },
   track: { width: TRACK_W, height: TRACK_H, borderRadius: radius.pill, borderWidth: 1, justifyContent: 'center' },
   thumb: { width: THUMB, height: THUMB, borderRadius: radius.pill, position: 'absolute', left: 0 },
+  chip: { minHeight: layout.target, flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingLeft: space.s3, paddingRight: space.s4, borderWidth: 1, borderRadius: radius.pill },
   segWrap: { gap: space.s2 },
-  seg: { flexDirection: 'row', padding: space.s1, gap: space.s1, borderRadius: radius.md, borderWidth: 1 },
-  segItem: { flex: 1, minHeight: layout.target, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm, paddingHorizontal: space.s2 },
+  seg: { flexDirection: 'row', padding: space.s1, gap: space.s1, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: 1 },
+  segItem: { flex: 1, minHeight: layout.target, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm, borderCurve: 'continuous', paddingHorizontal: space.s2 },
 });

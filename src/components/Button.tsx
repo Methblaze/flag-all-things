@@ -1,14 +1,30 @@
-import { Feather } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, View, type PressableStateCallbackType, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
 
+import { Icon, type IconName } from '@/components/Icon';
 import { AppText } from '@/components/primitives';
 import { layout, motion, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 type WebState = PressableStateCallbackType & { hovered?: boolean; focused?: boolean };
 type Kind = 'primary' | 'secondary' | 'text';
+
+/** Entering animation for a small element swapped in (an icon, the tab pill): a deep scale on the pop spring plus a quick fade.
+ *  Applied before the first frame, so nothing flashes at full size. Wrap content in <LayoutAnimationConfig skipEntering>
+ *  so what is already there on first paint stays at rest (Charles §1); only later swaps pop. */
+export const popIn = (from: number, delay = 0) => {
+  if (Platform.OS === 'web') return undefined; // Reanimated's web build only runs its predefined entering animations
+  return () => {
+    'worklet';
+    return {
+      initialValues: { opacity: 0, transform: [{ scale: from }] },
+      animations: {
+        opacity: withDelay(delay, withTiming(1, { duration: motion.dur.fast })),
+        transform: [{ scale: withDelay(delay, withSpring(1, motion.spring.pop)) }],
+      },
+    };
+  };
+};
 
 export function usePressScale() {
   const reduced = useReducedMotion();
@@ -26,7 +42,7 @@ export function Button({
   label, onPress, kind = 'primary', loading = false, loadingLabel, disabled = false, helper, icon, testID, fullWidth = true,
 }: {
   label: string; onPress: () => void; kind?: Kind; loading?: boolean; loadingLabel?: string; disabled?: boolean;
-  helper?: string; icon?: ComponentProps<typeof Feather>['name']; testID?: string; fullWidth?: boolean;
+  helper?: string; icon?: IconName; testID?: string; fullWidth?: boolean;
 }) {
   const c = useTheme();
   const press = usePressScale();
@@ -57,7 +73,7 @@ export function Button({
         >
           {(s: WebState) => (
             <View style={styles.row}>
-              {loading ? <ActivityIndicator color={fg} /> : icon ? <Feather name={icon} size={20} color={fg} /> : null}
+              {loading ? <ActivityIndicator color={fg} /> : icon ? <Icon name={icon} size={18} color={fg} weight="semibold" /> : null}
               <AppText variant="bodyStrong" color={fg} style={kind === 'text' && (s.hovered || s.focused) && styles.underline}>
                 {loading && loadingLabel ? loadingLabel : label}
               </AppText>

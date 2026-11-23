@@ -1,49 +1,31 @@
-import { Feather } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import type { ComponentProps } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { NativeTabs } from 'expo-router/native-tabs';
+import { Platform } from 'react-native';
 
-import { radius, type } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-type IconName = ComponentProps<typeof Feather>['name'];
-
-/** The active tab sits on a lemon pill: the app's one recurring highlight (DESIGN.md §2.1b). */
-function TabIcon({ name, focused, color }: { name: IconName; focused: boolean; color: unknown }) {
-  const c = useTheme();
-  return (
-    <View style={[styles.pill, focused && { backgroundColor: c.tertiary }]}>
-      <Feather name={name} size={20} color={focused ? c.onTertiary : (color as string)} />
-    </View>
-  );
-}
-
-const tab = (name: IconName) => ({ focused, color }: { focused: boolean; color: unknown }) => <TabIcon name={name} focused={focused} color={color} />;
-
+/** The system tab bar: Liquid Glass on iOS 26 (it shrinks as you scroll down), Material 3 on Android.
+ *  The web keeps its own bar in _layout.web.tsx. */
 export default function TabLayout() {
   const c = useTheme();
-  const insets = useSafeAreaInsets();
-  const { maxFontSizeMultiplier: _m, ...label } = type.tag;
+  // Lemon can't tint glass (it fails contrast on light), so iOS selects in ink and lets the filled symbol mark the tab.
+  // Android's Material indicator is a solid pill, so it keeps the lemon highlight with ink on it.
+  const android = Platform.OS === 'android'
+    ? { indicatorColor: c.tertiary, iconColor: { default: c.onSecondary, selected: c.onTertiary } }
+    : {};
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: c.ink,
-        tabBarInactiveTintColor: c.onSecondary,
-        // Default 49pt bar clips 13pt labels: item padding (10) + icon box (28) + label (16) needs 60pt.
-        tabBarStyle: { backgroundColor: c.secondary, borderTopColor: c.border, borderTopWidth: 1, height: 60 + insets.bottom, paddingTop: 0, paddingBottom: insets.bottom },
-        tabBarLabelStyle: label,
-        sceneStyle: { backgroundColor: c.canvas },
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: 'Scan', tabBarIcon: tab('maximize'), tabBarButtonTestID: 'tab-scan' }} />
-      <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: tab('clock'), tabBarButtonTestID: 'tab-history' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings', tabBarIcon: tab('sliders'), tabBarButtonTestID: 'tab-settings' }} />
-    </Tabs>
+    <NativeTabs tintColor={c.ink} minimizeBehavior="onScrollDown" {...android}>
+      <NativeTabs.Trigger name="(scan)" testID="tab-scan">
+        <NativeTabs.Trigger.Icon sf="barcode.viewfinder" md="barcode_scanner" />
+        <NativeTabs.Trigger.Label>Scan</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(history)" testID="tab-history">
+        <NativeTabs.Trigger.Icon sf={{ default: 'clock', selected: 'clock.fill' }} md="history" />
+        <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(settings)" testID="tab-settings">
+        <NativeTabs.Trigger.Icon sf={{ default: 'gearshape', selected: 'gearshape.fill' }} md="settings" />
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
-
-const styles = StyleSheet.create({
-  pill: { width: 48, height: 28, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-});

@@ -1,7 +1,7 @@
-import { Feather } from '@expo/vector-icons';
 import { forwardRef, useState, type ComponentRef, type ReactNode } from 'react';
 import { Platform, StyleSheet, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
 
+import { Icon } from '@/components/Icon';
 import { AppText } from '@/components/primitives';
 import { layout, radius, space, type } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -41,7 +41,7 @@ export const TextField = forwardRef<ComponentRef<typeof TextInput>, Props>(funct
       </View>
       {error ? (
         <View style={styles.error} accessibilityLiveRegion="polite">
-          <Feather name="alert-octagon" size={16} color={c.danger.fg} />
+          <Icon name="danger" size={16} color={c.danger.fg} />
           <AppText variant="meta" color={c.danger.fg} style={styles.grow}>{error}</AppText>
         </View>
       ) : null}
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: space.s2, alignItems: 'center' },
   inputWrap: { flex: 1, minWidth: 0, justifyContent: 'center' },
   input: { minHeight: layout.control, borderRadius: radius.sm, borderCurve: 'continuous', paddingHorizontal: space.s3 },
-  hint: { position: 'absolute', right: space.s3, borderWidth: 1, borderRadius: radius.sm / 2, paddingHorizontal: space.s2 - 2 },
+  hint: { position: 'absolute', right: space.s3, borderWidth: 1, borderRadius: radius.sm / 2, borderCurve: 'continuous', paddingHorizontal: space.s2 - 2 },
   error: { flexDirection: 'row', gap: space.s2, alignItems: 'center' },
   grow: { flex: 1 },
 });

@@ -10,7 +10,7 @@ Stage 3 of 6. This is the single source of visual truth: screens use only these 
   - A warm off-white canvas, near-black ink and a strict type hierarchy.
   - Spacing does the grouping; borders are used only where spacing can't.
 - **Colour carries meaning, never decoration.** The four severity colours carry the verdicts. The primary action is solid ink, so a call-to-action is never mistaken for a severity.
-- **Brand: ink and lemon (palette C, chosen 2026-11-19).** Ink is the primary. Warm sand (`secondary`) carries structure: the tab bar and control tracks on a sand-tinted canvas. Lemon (`tertiary`) is the one rare highlight: the active tab, the scan reticle and the example chips. Lemon's hue sits 36° from amber and is far lighter, so it never reads as a warning.
+- **Brand: ink and lemon (palette C, chosen 2026-11-19).** Ink is the primary. Warm sand (`secondary`) carries structure: control tracks (and the web tab bar) on a sand-tinted canvas. Lemon (`tertiary`) is the one rare highlight: the brand mark's flag, the scan reticle, the example chips, and the active tab on Android and web. The iOS tab bar is the system one (Liquid Glass on iOS 26), selected in ink, because lemon fails contrast as a tint on glass. Lemon's hue sits 36° from amber and is far lighter, so it never reads as a warning.
 - **Rejected:**
   - The generator's first match, "Vibrant & Block-based" plus an orange call-to-action. It was matched to a landing page. The orange would collide with *warning*, and loudness works against the "not everything is red" anti-goal.
   - Glassmorphism, gradients and emoji icons.
@@ -23,11 +23,12 @@ Every pair below was checked with a WCAG contrast script (2026-11-18). Body and 
 
 | Token | Light | Dark | Use | Contrast (light / dark) |
 |---|---|---|---|---|
-| `canvas` | `#F6F4EE` | `#12110E` | Screen background (warm sand tint) | — |
+| `canvas` | `#F1EEE6` | `#12110E` | Screen background (warm sand), one step under `surface` so white groups read without an outline | `surface` 1.16 / 1.10 on it (iOS grouped: 1.12) |
 | `surface` | `#FFFFFF` | `#1C1B17` | Cards, sections, inputs | — |
-| `ink` | `#16181D` | `#F1F1EE` | Primary text, primary button fill, focus ring | 16.4 / 16.7 on canvas |
-| `muted` | `#4F5562` | `#ABA696` | Secondary text, meta, placeholders | 6.8 / 7.8 on canvas, 6.1 / 6.2 on secondary |
-| `border` | `#E2DDD0` | `#2E2C26` | Hairline dividers (decorative only) | — |
+| `ink` | `#16181D` | `#F1F1EE` | Primary text, primary button fill, focus ring | 15.3 / 16.7 on canvas |
+| `muted` | `#4F5562` | `#ABA696` | Secondary text, meta, placeholders | 6.5 / 7.8 on canvas, 6.1 / 6.2 on secondary |
+| `separator` | `#D4CEC0` | `#3D3A32` | Hairline between rows of a group, inset to the text | 1.57 / 1.52 on surface (iOS: 1.71) |
+| `border` | `#E2DDD0` | `#2E2C26` | Decorative edges: the web tab bar, the segmented track, input hints | — |
 | `borderStrong` | `#8C9099` | `#6F6B60` | Input borders, outlined buttons | 3.2 / 3.2 on surface |
 | `onInk` | `#FFFFFF` | `#16181D` | Text on the primary button | 17.8 / 15.1 |
 | `scrim` | `rgba(16,17,19,0.6)` | `rgba(0,0,0,0.6)` | Behind the camera hint and the torch button | — |
@@ -36,15 +37,26 @@ Every pair below was checked with a WCAG contrast script (2026-11-18). Body and 
 
 | Token | Light | Dark | Use | Contrast (light / dark) |
 |---|---|---|---|---|
-| `secondary` | `#ECE7DA` | `#28261F` | Structural sand: tab bar, segmented-control track | ink 14.4 / 13.4 on it |
+| `secondary` | `#ECE7DA` | `#28261F` | Structural sand: web tab bar, segmented-control track | ink 14.4 / 13.4 on it |
 | `onSecondary` | `#4A4436` | `#D8D1BE` | Text and icons on `secondary` when ink is too loud | 7.8 / 9.9 |
-| `tertiary` | `#E2F56A` | `#D7EC5A` | Lemon highlight: active-tab pill, scan reticle, example chips | 14.8 / 13.6 for `onTertiary`; 14.8 / 13.6 against the dark camera |
+| `tertiary` | `#E2F56A` | `#D7EC5A` | Lemon highlight: active-tab pill (Android indicator, web pill), scan reticle, example chips | 14.8 / 13.6 for `onTertiary`; 14.8 / 13.6 against the dark camera |
 | `onTertiary` | `#16181D` | `#16181D` | Text and icons on lemon | — |
 
 **Rules:**
 1. **Lemon is a fill, never a line on light.** It is only about 1.2:1 against white, so use it only behind `onTertiary` content or on dark backgrounds (the camera). Never use it for text, icons or borders on canvas or surface.
 2. **Lemon stays rare,** a few spots per screen, so it keeps its pull. It never marks a severity, a verdict or a destructive action.
 3. **Every severity colour still passes on sand** (lowest: good `fg` 4.76:1 on `secondary`), so severity marks may sit on the tab bar or control tracks.
+
+### 2.1c Increase Contrast (iOS)
+
+With Settings > Accessibility > Display & Text Size > Increase Contrast on, the quiet tokens step up through `DynamicColorIOS` (`highContrast` in `tokens.ts`, applied in `useTheme`). Every other token already clears AA with room to spare. Android and web use the base values.
+
+| Token | Light | Dark | Contrast (light / dark) |
+|---|---|---|---|
+| `muted` | `#3D424D` | `#CFC9B9` | 8.7 / 11.4 on canvas |
+| `borderStrong` | `#5F636C` | `#9C978A` | 6.0 / 5.9 on surface |
+| `separator` | `#9A9384` | `#6A6559` | 3.1 / 3.0 on surface |
+| `border` | `#B9B2A3` | `#5A564C` | 2.1 / 2.4 on surface |
 
 ### 2.2 Severity (semantic)
 
@@ -82,7 +94,7 @@ Each severity has four tokens:
    | Good | `good` |
    | Unknown | `neutral` |
 4. Red appears **only** for personal conflicts (danger). Error *states* (form errors, failed requests) use `danger.fg` for the icon and text, which is consistent: something needs your attention.
-5. Dark mode follows the system setting (`useColorScheme`). There is no in-app toggle in v1.
+5. Dark mode follows the system by default. Settings > Appearance (System / Light / Dark) overrides it: `src/theme/appearance.ts` calls `Appearance.setColorScheme` on native (so the system tab bar, headers, status bar and keyboard follow) and sets `data-theme` on the web page. The choice is saved and loaded before the splash hides, so there is no wrong-theme flash.
 
 ## 3. Typography
 
@@ -124,8 +136,14 @@ Each severity has four tokens:
 | Card / section padding | `s4` |
 | Content max width (web, tablet) | 600 pt, centred, with the canvas filling the rest. Desktop shows the app as a focused column: one purpose per screen, not a stretched dashboard. |
 | Touch targets | ≥ 44×44 pt. List rows ≥ 56 pt tall. Icon buttons use a 24 pt glyph plus `hitSlop` to reach 44. |
-| Safe areas | All screens use `react-native-safe-area-context` insets. The tab bar adds the bottom inset. The Scan viewfinder may extend under the status bar. |
+| Safe areas | Every screen sits under a native stack header, and its scroll view uses `contentInsetAdjustmentBehavior="automatic"`: iOS owns the top and bottom insets, so content scrolls under the glass bars with the system edge effect, never under the clock. |
 | **iPhone SE budget (375×667)** | Scan: viewfinder ≤ 50% of screen height (min 240), with the manual field and tab bar visible without scrolling. Result: verdict, headline and counts fully visible above the fold, with the first section header peeking (Zeigarnik: there's more). |
+
+### 4.1 Navigation bar
+
+- **System headers only.** Each tab is its own native stack (`src/app/(tabs)/(scan|history|settings)`), so History and Settings get a large title that collapses into the bar on scroll. Scan is camera-first: an inline title with the brand mark (`BrandTitle`).
+- Pushed screens (Product, Label) use the system back button as a chevron only (`headerBackButtonDisplayMode: 'minimal'`): swipe from the left edge goes back and long-press opens the history menu. The long-press menu lists earlier screens by title: the tabs entry takes the tab you came from, and Product takes the product name. A cold deep link with no history shows "Scan" in that slot (`BackFallback`); Escape goes back on desktop web.
+- Titles: Figtree 700 large, Figtree 600 inline, in `ink`. iOS 26 draws the glass bar only when no header background is set, so iOS sets none; Android and web use `canvas`. Options live in `useHeaderOptions` (`src/components/header.tsx`).
 
 ## 5. Shape and elevation
 
@@ -137,12 +155,12 @@ Each severity has four tokens:
 | `radius.pill` | 999 | Count pills, verdict pill |
 | Corner smoothing | `borderCurve: 'continuous'` on iOS for every radius | Smooth, continuous corners |
 
-**Elevation: borders first, shadows rarely.**
+**Elevation: fill first, shadows rarely.** Lists are iOS inset groups: one `surface` block per group on `canvas`, rows split by inset `separator` hairlines (`Separator`), no outline and no per-row card. Only a group's ends are rounded.
 
 | Level | Treatment | Use |
 |---|---|---|
 | 0 | None | Canvas content |
-| 1 | `surface` fill + 1 px `border` | Sections, cards, inputs (inputs use `borderStrong`) |
+| 1 | `surface` fill, no outline | Groups (result sections, History, Settings), the summary card. Inputs and chips keep a 1 px `borderStrong` edge because they are controls |
 | 2 | `surface` + shadow `0 4 16 rgba(16,17,19,0.12)` (light) / 1 px `borderStrong` (dark) | Toast and the floating torch button only |
 
 **Z-index scale:**
@@ -157,23 +175,37 @@ Each severity has four tokens:
 
 ## 6. Iconography
 
-- **Feather icons through `@expo/vector-icons`.** They ship with Expo, so there's no new dependency. 24 pt in rows and buttons, 20 pt inline with meta text, 2 pt stroke.
+- **One `Icon` component (`src/components/Icon.tsx`), named by meaning.** iOS draws SF Symbols (`expo-symbols`), Android draws Material Symbols, and the web falls back to Feather. Screens never import an icon set directly.
+- **Weight matches the text beside it:** `regular` next to body and meta text, `semibold` next to bold labels (buttons, chips, the Remove ×), `bold` in the verdict pill. Android draws one weight.
+- **Severity glyphs are filled** (they are status marks, and the fill keeps the shape readable at 16 pt). Selected states use the filled variant (tabs, the saved-key tick).
+- An icon is hidden from screen readers unless it carries meaning alone (`label`): severity icons say their word ("Your alert").
 
-| Purpose | Feather glyph |
-|---|---|
-| Severity | `alert-octagon` (danger), `alert-triangle` (warning), `info` (info), `check-circle` (good), `help-circle` (unknown/neutral) |
-| Tabs | `maximize` (Scan), `clock` (History), `sliders` (Settings) |
-| Actions | `zap` / `zap-off` (torch), `camera`, `image`, `trash-2`, `x`, `chevron-down`, `external-link`, `rotate-ccw` (undo) |
+| Name | iOS (SF Symbol) | Android (Material) | Web (Feather) |
+|---|---|---|---|
+| `danger` / `warning` | `exclamationmark.octagon.fill` / `exclamationmark.triangle.fill` | `report` / `warning` | `alert-octagon` / `alert-triangle` |
+| `info` / `good` / `unknown` | `info.circle.fill` / `checkmark.circle.fill` / `questionmark.circle.fill` | `info` / `check_circle` / `help` | `info` / `check-circle` / `help-circle` |
+| `camera` / `photo` / `scan` | `camera` / `photo.on.rectangle` / `barcode.viewfinder` | `photo_camera` / `image` / `barcode_scanner` | `camera` / `image` / `maximize` |
+| `torchOn` / `torchOff` | `flashlight.on.fill` / `flashlight.off.fill` | `flashlight_on` / `flashlight_off` | `zap` / `zap-off` |
+| `close` / `trash` / `retry` | `xmark` / `trash` / `arrow.counterclockwise` | `close` / `delete` / `refresh` | `x` / `trash-2` / `rotate-ccw` |
+| `check` / `plus` (chips) | `checkmark` / `plus` | `check` / `add` | `check` / `plus` |
+| `external` / `chevronDown` / `package` | `arrow.up.right` / `chevron.down` / `shippingbox` | `open_in_new` / `expand_more` / `inventory_2` | `external-link` / `chevron-down` / `package` |
+| Tabs | `barcode.viewfinder`, `clock` / `clock.fill`, `gearshape` / `gearshape.fill` | `barcode_scanner`, `history`, `settings` | `maximize`, `clock`, `sliders` |
 
 - No emoji as icons. Every icon-only button has an `accessibilityLabel`.
+
+### 6.1 Brand mark
+
+- **A lemon pennant on a canvas-white pole with a round knob, on an ink tile** (radius 22% of the tile). Geometry lives in `src/theme/brand.ts`; `BrandMark` draws it in the app and `scripts/brand-assets.mjs` renders the icon, adaptive icon, splash and favicon from the same numbers.
+- The pennant tapers (the fly edge is shorter than the hoist) and holds a still S-wave pose in icons. In the app it sits beside the "Flag All Things" wordmark on Scan (28 pt), and waves on a 2.4 s sine loop in empty History (56 pt) and on the label intro (48 pt). The loop stops under Reduce Motion and on web.
+- Splash: the tile at 96 pt on `canvas` (dark: `#12110E`).
 
 ## 7. Imagery
 
 - **Product photos come from OFF's `image_front_small_url`,** shown 48×48 in History and 56×56 in the Result meta line, with `radius.sm`.
   - While loading: a `secondary` (sand) block, fading in over 200 ms once the image arrives.
-  - Missing image: the `package` Feather glyph on `secondary`. Never a broken image.
+  - Missing image: the `package` icon on `secondary`. Never a broken image.
 - **Label-photo thumbnail:** the user's own photo, 64×64, with `radius.sm`.
-- **No stock illustration and no cartoon empty states** (anti-slop). Empty states are type plus one icon plus one action.
+- **No stock illustration and no cartoon empty states** (anti-slop). Empty states are type plus the brand mark (or one icon) plus one action.
 
 ## 8. Motion tokens (Stage 5 tunes the curves within these limits)
 
@@ -185,6 +217,7 @@ Each severity has four tokens:
 | `dur.slow` | 300 ms | Summary reveal, accordion, screen transitions |
 | `spring.press` | Reanimated `{ damping: 20, stiffness: 400 }`, scale 0.97 | Buttons, chips, rows |
 | `spring.layout` | `{ damping: 26, stiffness: 260 }` | Accordion height, list reflow (interruptible) |
+| `spring.pop` | `{ damping: 22, stiffness: 380 }`, ~10% overshoot | `popIn`: chip plus-to-tick (0.3 → 1), web active tab pill (0.6 → 1), verdict pill (0.9 → 1) with its icon 80 ms later (0.3 → 1). Never on first paint (`LayoutAnimationConfig skipEntering`) |
 | `ease.out` | `Easing.bezier(0.23, 1, 0.32, 1)` | Elements entering (strong ease-out) |
 | `ease.inOut` | `Easing.bezier(0.77, 0, 0.175, 1)` | Moving or resizing on screen (accordion, switch thumb, list reflow) |
 | `ease.in` | `Easing.bezier(0.55, 0, 1, 0.45)` | Elements leaving, on the shorter exit duration |
