@@ -45,10 +45,10 @@ test('503 then 503 → busy', async () => expect(await fetchProduct('57012345678
 test('web identifies by query string, native by User-Agent', async () => {
   const f = jest.fn((_url: string, _init?: RequestInit) => res(404, {}));
   await fetchProduct('5701234567899', { fetchImpl: f as unknown as typeof fetch, platform: 'web' });
-  expect(f.mock.calls[0][0]).toMatch(/app_name=FlagAllThings/);
+  expect(f.mock.calls[0][0]).toMatch(/app_name=FoodFlag/);
   expect((f.mock.calls[0][1]?.headers as Record<string, string> | undefined)?.['User-Agent']).toBeUndefined();
   await fetchProduct('5701234567899', { fetchImpl: f as unknown as typeof fetch, platform: 'ios' });
-  expect((f.mock.calls[1][1]!.headers as Record<string, string>)['User-Agent']).toMatch(/^FlagAllThings\/\d+\.\d+\.\d+ \(https:/);
+  expect((f.mock.calls[1][1]!.headers as Record<string, string>)['User-Agent']).toMatch(/^FoodFlag\/\d+\.\d+\.\d+ \(https:/);
 });
 test('a lookup that never answers times out to offline instead of hanging', async () => {
   const hang = jest.fn((_url: string, init?: RequestInit) => new Promise<Response>((_, reject) => {

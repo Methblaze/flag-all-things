@@ -118,9 +118,9 @@ function Row({ item, first, last, onDelete }: { item: ScanHistoryItem; first: bo
           containerStyle={[styles.swipe, ends]}
           onSwipeableOpen={onDelete}
           renderRightActions={() => (
-            <View style={[styles.swipeAction, { backgroundColor: c.ink }]}>
-              <Icon name="trash" size={20} color={c.onInk} weight="semibold" />
-              <AppText variant="bodyStrong" color={c.onInk}>Delete</AppText>
+            <View style={[styles.swipeAction, { backgroundColor: c.pine }]}>
+              <Icon name="trash" size={20} color={c.onPine} weight="semibold" />
+              <AppText variant="bodyStrong" color={c.onPine}>Delete</AppText>
             </View>
           )}
         >

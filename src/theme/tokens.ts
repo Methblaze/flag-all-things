@@ -15,6 +15,9 @@ const light = {
   // Brand (palette C, ink + lemon): sand carries structure, lemon is a rare highlight. Lemon is ~1.2:1 on white,
   // so it is only ever a fill behind onTertiary content or a mark on dark camera, never text or a line on light.
   secondary: '#ECE7DA', onSecondary: '#4A4436', tertiary: '#E2F56A', onTertiary: '#16181D',
+  // 60-30-10 (DESIGN.md §2.1b): cream canvas 60, pine 30, lemon 10. Pine fills selected controls, the toast and the web
+  // tab bar; pineInk is pine as text on light (titles, back chevron, selected tab). Lemon is the call to action.
+  pine: '#1F3D36', onPine: '#F3F0E6', onPineMuted: '#C2D3CB', pineInk: '#1F3D36',
   danger: severity('#B42318', '#FDECEA', '#B42318', '#FFFFFF'),
   warning: severity('#8A4A00', '#FFF4DC', '#E59A1A', '#16181D'),
   info: severity('#1F5BB5', '#EAF2FD', '#1F5BB5', '#FFFFFF'),
@@ -30,6 +33,7 @@ const dark: Palette = {
   separator: '#3D3A32', border: '#2E2C26', borderStrong: '#6F6B60', onInk: '#16181D', scrim: 'rgba(0,0,0,0.6)',
   onScrim: '#FFFFFF',
   secondary: '#28261F', onSecondary: '#D8D1BE', tertiary: '#D7EC5A', onTertiary: '#16181D',
+  pine: '#2F6355', onPine: '#F3F0E6', onPineMuted: '#D0DED7', pineInk: '#9CCFBE',
   danger: severity('#FF8F85', '#3A1916', '#FF8F85', '#16181D'),
   warning: severity('#F5B851', '#35260B', '#F5B851', '#16181D'),
   info: severity('#8DB8FF', '#16243A', '#8DB8FF', '#16181D'),

@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="225.28" fill="#16181D"/><g transform="translate(512 512) scale(7.2) translate(-50 -50)">
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="225.28" fill="#1F3D36"/><g transform="translate(512 512) scale(7.2) translate(-50 -50)">
     <circle cx="27" cy="18" r="4.5" fill="#F6F4EE"/>
     <rect x="24" y="20" width="6" height="66" rx="3" fill="#F6F4EE"/>
-    <path d="M30 22 C45.333333333333336 23.438276615812608 60.66666666666667 16.08730162006924 76 23.41971124728924 L76 48.419711247289236 C60.66666666666667 46.08730162006924 45.333333333333336 53.43827661581261 30 52 Z" fill="#E2F56A" stroke="#E2F56A" stroke-width="4" stroke-linejoin="round"/>
+    <mask id="bite"><rect x="0" y="0" width="100" height="100" fill="#fff"/><path d="M69.5 30.41971124728924 a10.5 10.5 0 1 0 21 0 a10.5 10.5 0 1 0 -21 0 M71 42.91971124728924 a8.5 8.5 0 1 0 17 0 a8.5 8.5 0 1 0 -17 0 " fill="#000"/></mask>
+    <path d="M30 22 C45.333333333333336 23.438276615812608 60.66666666666667 16.08730162006924 76 23.41971124728924 L76 48.419711247289236 C60.66666666666667 46.08730162006924 45.333333333333336 53.43827661581261 30 52 Z" fill="#E2F56A" stroke="#E2F56A" stroke-width="4" stroke-linejoin="round" mask="url(#bite)"/>
   </g></svg>

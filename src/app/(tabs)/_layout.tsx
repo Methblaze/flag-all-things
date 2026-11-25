@@ -7,13 +7,13 @@ import { useTheme } from '@/theme/useTheme';
  *  The web keeps its own bar in _layout.web.tsx. */
 export default function TabLayout() {
   const c = useTheme();
-  // Lemon can't tint glass (it fails contrast on light), so iOS selects in ink and lets the filled symbol mark the tab.
+  // Lemon can't tint glass (it fails contrast on light), so iOS selects in pine and lets the filled symbol mark the tab.
   // Android's Material indicator is a solid pill, so it keeps the lemon highlight with ink on it.
   const android = Platform.OS === 'android'
     ? { indicatorColor: c.tertiary, iconColor: { default: c.onSecondary, selected: c.onTertiary } }
     : {};
   return (
-    <NativeTabs tintColor={c.ink} minimizeBehavior="onScrollDown" {...android}>
+    <NativeTabs tintColor={c.pineInk} minimizeBehavior="onScrollDown" {...android}>
       <NativeTabs.Trigger name="(scan)" testID="tab-scan">
         <NativeTabs.Trigger.Icon sf="barcode.viewfinder" md="barcode_scanner" />
         <NativeTabs.Trigger.Label>Scan</NativeTabs.Trigger.Label>

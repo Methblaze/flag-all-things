@@ -110,8 +110,8 @@ export async function fetchProduct(
   const { fetchImpl = fetch, platform = Platform.OS as 'web' | 'ios' | 'android', now = Date.now, timeoutMs = 10_000 } = opts;
   const version = Constants.expoConfig?.version ?? '1.0.0';
   // Browsers forbid setting User-Agent; OFF accepts app_name/app_version instead.
-  const query = `fields=${OFF_FIELDS}` + (platform === 'web' ? `&app_name=FlagAllThings&app_version=${version}` : '');
-  const init: RequestInit = platform === 'web' ? {} : { headers: { 'User-Agent': `FlagAllThings/${version} (${OFF_CONTACT})` } };
+  const query = `fields=${OFF_FIELDS}` + (platform === 'web' ? `&app_name=FoodFlag&app_version=${version}` : '');
+  const init: RequestInit = platform === 'web' ? {} : { headers: { 'User-Agent': `FoodFlag/${version} (${OFF_CONTACT})` } };
 
   const v3 = await attempt(`${BASE}/api/v3/product/${code}?${query}`, init, fetchImpl, now(), 'retry', timeoutMs);
   if (v3 !== 'retry') return v3;

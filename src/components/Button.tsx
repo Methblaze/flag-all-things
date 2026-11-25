@@ -47,7 +47,9 @@ export function Button({
   const c = useTheme();
   const press = usePressScale();
   const inactive = disabled || loading;
-  const fg = kind === 'primary' ? c.onInk : c.ink;
+  // A faded lemon reads as olive on dark, so a disabled primary drops to the sand track with muted text instead.
+  const off = disabled && kind === 'primary';
+  const fg = off ? c.muted : kind === 'primary' ? c.onTertiary : c.ink;
 
   return (
     <View style={[{ gap: space.s2 }, fullWidth ? styles.full : styles.inline]}>
@@ -63,11 +65,12 @@ export function Button({
           onPressOut={press.onPressOut}
           style={(s: WebState) => [
             styles.base,
-            kind === 'primary' && { backgroundColor: c.ink },
+            // Lemon is the 10%: the one call to action per screen.
+            kind === 'primary' && { backgroundColor: off ? c.secondary : c.tertiary },
             kind === 'secondary' && { backgroundColor: c.surface, borderWidth: 1, borderColor: c.borderStrong },
             kind === 'text' && styles.text,
             s.hovered && !inactive && kind !== 'text' && { opacity: 0.92 },
-            disabled && { opacity: 0.38 },
+            disabled && !off && { opacity: 0.38 },
             Platform.OS === 'web' && ({ cursor: inactive ? 'not-allowed' : 'pointer' } as ViewStyle),
           ]}
         >

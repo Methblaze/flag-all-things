@@ -98,7 +98,7 @@ export default function ScanScreen() {
     <Screen>
       <Stack.Screen options={{ headerTitle: () => <BrandTitle /> }} />
       {cameraUsable ? (
-        <View style={[styles.viewfinder, { height: viewfinderHeight, backgroundColor: c.ink }]}>
+        <View style={[styles.viewfinder, { height: viewfinderHeight, backgroundColor: c.pine }]}>
           {showCamera ? (
             <CameraView style={StyleSheet.absoluteFill} facing="back" enableTorch={torch}
               barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a'] }} onBarcodeScanned={onScanned} />
@@ -158,15 +158,15 @@ export default function ScanScreen() {
   );
 }
 
-/** Chips are small (<200pt), so they press like buttons: a 0.97 spring scale, not a fade (Charles, anticipation). */
+/** Pine, not lemon: lemon is kept for the one call to action (Look up). Chips are small (<200pt), so they press like buttons: a 0.97 spring scale, not a fade (Charles, anticipation). */
 function ExampleChip({ code, label, onPress }: { code: string; label: string; onPress: () => void }) {
   const c = useTheme();
   const press = usePressScale();
   return (
     <Animated.View style={press.style}>
       <Pressable testID={`example-${code}`} accessibilityRole="link" accessibilityLabel={`${label}, barcode ${code}`}
-        onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut} style={[styles.chip, { backgroundColor: c.tertiary }]}>
-        <AppText color={c.onTertiary}>{label}</AppText>
+        onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut} style={[styles.chip, { backgroundColor: c.pine }]}>
+        <AppText color={c.onPine}>{label}</AppText>
       </Pressable>
     </Animated.View>
   );

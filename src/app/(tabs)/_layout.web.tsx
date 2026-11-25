@@ -37,10 +37,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: c.ink,
-        tabBarInactiveTintColor: c.onSecondary,
+        tabBarActiveTintColor: c.onPine,
+        tabBarInactiveTintColor: c.onPineMuted,
         // Default 49pt bar clips 13pt labels: item padding (10) + icon box (28) + label (16) needs 60pt.
-        tabBarStyle: { backgroundColor: c.secondary, borderTopColor: c.border, borderTopWidth: 1, height: 60 + insets.bottom, paddingTop: 0, paddingBottom: insets.bottom },
+        tabBarStyle: { backgroundColor: c.pine, borderTopColor: c.pine, borderTopWidth: 1, height: 60 + insets.bottom, paddingTop: 0, paddingBottom: insets.bottom },
         tabBarLabelStyle: label,
         sceneStyle: { backgroundColor: c.canvas },
       }}

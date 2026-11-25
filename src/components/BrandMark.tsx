@@ -3,7 +3,7 @@ import { Platform, View } from 'react-native';
 import Animated, { Easing, cancelAnimation, useAnimatedProps, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { MARK, flagPath } from '@/theme/brand';
+import { MARK, bitePath, flagPath } from '@/theme/brand';
 import { useTheme } from '@/theme/useTheme';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -27,18 +27,22 @@ export function BrandMark({ size = 28, wave = false }: { size?: number; wave?: b
     return () => cancelAnimation(phase);
   }, [live, phase]);
   const flag = useAnimatedProps(() => ({ d: flagPath(phase.value) }));
+  const bite = useAnimatedProps(() => ({ d: bitePath(phase.value) }));
   const { knob: k, pole: p } = MARK;
 
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: size, height: size }}>
       {/* The viewBox is the mark's box widened by 1/0.72 around its centre: the same 0.72 inset as the app icon, so this is the icon in miniature. */}
       <Svg width={size} height={size} viewBox={`${-PAD} ${-PAD} ${BOX} ${BOX}`}>
-        <Rect x={-PAD} y={-PAD} width={BOX} height={BOX} rx={MARK.tileRadius / INSET} fill={c.onTertiary} />
+        <Rect x={-PAD} y={-PAD} width={BOX} height={BOX} rx={MARK.tileRadius / INSET} fill={c.pine} />
         <Circle cx={k.cx} cy={k.cy} r={k.r} fill={POLE} />
         <Rect x={p.x} y={p.y} width={p.width} height={p.height} rx={p.rx} fill={POLE} />
         {live
           ? <AnimatedPath animatedProps={flag} fill={c.tertiary} stroke={c.tertiary} strokeWidth={MARK.flagStroke} strokeLinejoin="round" />
           : <Path d={flagPath(MARK.restPhase)} fill={c.tertiary} stroke={c.tertiary} strokeWidth={MARK.flagStroke} strokeLinejoin="round" />}
+        {live
+          ? <AnimatedPath animatedProps={bite} fill={c.pine} />
+          : <Path d={bitePath(MARK.restPhase)} fill={c.pine} />}
       </Svg>
     </View>
   );

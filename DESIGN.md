@@ -1,4 +1,4 @@
-# DESIGN.md: Flag All Things
+# DESIGN.md: Food-Flag
 
 Stage 3 of 6. This is the single source of visual truth: screens use only these tokens. Behaviour lives in the [interaction spec](docs/superpowers/specs/2026-11-18-flag-all-things-interaction.md).
 
@@ -9,8 +9,13 @@ Stage 3 of 6. This is the single source of visual truth: screens use only these 
 - **Base style: Minimalism and Swiss** (from the UI/UX Pro Max search; WCAG AAA-friendly, low complexity).
   - A warm off-white canvas, near-black ink and a strict type hierarchy.
   - Spacing does the grouping; borders are used only where spacing can't.
-- **Colour carries meaning, never decoration.** The four severity colours carry the verdicts. The primary action is solid ink, so a call-to-action is never mistaken for a severity.
-- **Brand: ink and lemon (palette C, chosen 2026-11-19).** Ink is the primary. Warm sand (`secondary`) carries structure: control tracks (and the web tab bar) on a sand-tinted canvas. Lemon (`tertiary`) is the one rare highlight: the brand mark's flag, the scan reticle, the example chips, and the active tab on Android and web. The iOS tab bar is the system one (Liquid Glass on iOS 26), selected in ink, because lemon fails contrast as a tint on glass. Lemon's hue sits 36° from amber and is far lighter, so it never reads as a warning.
+- **Colour carries meaning, never decoration.** The four severity colours carry the verdicts. The primary action is solid lemon with ink text, a hue no severity uses, so a call-to-action is never mistaken for a verdict.
+- **Brand: pine and lemon, split 60-30-10 (chosen 2026-11-25; it replaced ink and lemon).**
+  - **60, cream canvas** (`canvas`) with white groups on it.
+  - **30, pine** (`pine` fills, `pineInk` as text): navigation titles and the back chevron, the selected tab, selected chips, segmented controls and switches, the toast, the swipe-to-delete action, the example chips, the camera frame, the brand tile and the web tab bar.
+  - **10, lemon** (`tertiary`): the primary button (one call to action per screen), the brand flag, the scan reticle and the active-tab pill on Android and web. Lemon's hue sits 36° from amber and is far lighter, so it never reads as a warning.
+  - Sand (`secondary`) stays for quiet structure: placeholders, skeletons, the segmented track and the disabled primary button.
+  - The iOS tab bar and headers are the system glass ones; lemon fails contrast as a tint on glass, so they select in `pineInk`.
 - **Rejected:**
   - The generator's first match, "Vibrant & Block-based" plus an orange call-to-action. It was matched to a landing page. The orange would collide with *warning*, and loudness works against the "not everything is red" anti-goal.
   - Glassmorphism, gradients and emoji icons.
@@ -25,27 +30,32 @@ Every pair below was checked with a WCAG contrast script (2026-11-18). Body and 
 |---|---|---|---|---|
 | `canvas` | `#F1EEE6` | `#12110E` | Screen background (warm sand), one step under `surface` so white groups read without an outline | `surface` 1.16 / 1.10 on it (iOS grouped: 1.12) |
 | `surface` | `#FFFFFF` | `#1C1B17` | Cards, sections, inputs | — |
-| `ink` | `#16181D` | `#F1F1EE` | Primary text, primary button fill, focus ring | 15.3 / 16.7 on canvas |
+| `ink` | `#16181D` | `#F1F1EE` | Primary text, text on lemon, focus ring | 15.3 / 16.7 on canvas |
 | `muted` | `#4F5562` | `#ABA696` | Secondary text, meta, placeholders | 6.5 / 7.8 on canvas, 6.1 / 6.2 on secondary |
 | `separator` | `#D4CEC0` | `#3D3A32` | Hairline between rows of a group, inset to the text | 1.57 / 1.52 on surface (iOS: 1.71) |
 | `border` | `#E2DDD0` | `#2E2C26` | Decorative edges: the web tab bar, the segmented track, input hints | — |
 | `borderStrong` | `#8C9099` | `#6F6B60` | Input borders, outlined buttons | 3.2 / 3.2 on surface |
-| `onInk` | `#FFFFFF` | `#16181D` | Text on the primary button | 17.8 / 15.1 |
+| `onInk` | `#FFFFFF` | `#16181D` | Text on an ink fill (rare since pine took over fills) | 17.8 / 15.1 |
 | `scrim` | `rgba(16,17,19,0.6)` | `rgba(0,0,0,0.6)` | Behind the camera hint and the torch button | — |
 
 ### 2.1b Brand roles
 
 | Token | Light | Dark | Use | Contrast (light / dark) |
 |---|---|---|---|---|
-| `secondary` | `#ECE7DA` | `#28261F` | Structural sand: web tab bar, segmented-control track | ink 14.4 / 13.4 on it |
+| `pine` | `#1F3D36` | `#2F6355` | The 30%: fills for selected controls, toast, example chips, web tab bar, brand tile | `onPine` 10.4 / 6.1 on it; against canvas 10.2 / 2.7 |
+| `onPine` | `#F3F0E6` | `#F3F0E6` | Text and icons on pine | — |
+| `onPineMuted` | `#C2D3CB` | `#D0DED7` | Inactive labels on the pine web tab bar | 7.6 / 5.0 |
+| `pineInk` | `#1F3D36` | `#9CCFBE` | Pine as text and icons on canvas or surface: nav titles, back chevron, selected iOS tab | 10.2 / 10.9 on canvas |
+| `secondary` | `#ECE7DA` | `#28261F` | Quiet sand: segmented track, placeholders, skeletons, disabled primary button | ink 14.4 / 13.4 on it |
 | `onSecondary` | `#4A4436` | `#D8D1BE` | Text and icons on `secondary` when ink is too loud | 7.8 / 9.9 |
-| `tertiary` | `#E2F56A` | `#D7EC5A` | Lemon highlight: active-tab pill (Android indicator, web pill), scan reticle, example chips | 14.8 / 13.6 for `onTertiary`; 14.8 / 13.6 against the dark camera |
+| `tertiary` | `#E2F56A` | `#D7EC5A` | Lemon, the 10%: primary button, brand flag, scan reticle, active-tab pill (Android indicator, web pill) | 14.8 / 13.6 for `onTertiary`; 14.8 / 13.6 against the dark camera |
 | `onTertiary` | `#16181D` | `#16181D` | Text and icons on lemon | — |
 
 **Rules:**
 1. **Lemon is a fill, never a line on light.** It is only about 1.2:1 against white, so use it only behind `onTertiary` content or on dark backgrounds (the camera). Never use it for text, icons or borders on canvas or surface.
-2. **Lemon stays rare,** a few spots per screen, so it keeps its pull. It never marks a severity, a verdict or a destructive action.
-3. **Every severity colour still passes on sand** (lowest: good `fg` 4.76:1 on `secondary`), so severity marks may sit on the tab bar or control tracks.
+2. **Lemon is the 10%:** one primary button per screen plus the brand and scan marks, so it keeps its pull. It never marks a severity, a verdict or a destructive action. A disabled primary button drops to sand, never faded lemon (which reads as olive on dark).
+3. **Pine never sits behind a verdict pill:** it is 2:1 against the Good green, enough to read as a different shape, not enough to carry a pill. Verdicts stay on white surfaces.
+4. **Every severity colour still passes on sand** (lowest: good `fg` 4.76:1 on `secondary`), so severity marks may sit on the tab bar or control tracks.
 
 ### 2.1c Increase Contrast (iOS)
 
@@ -195,8 +205,8 @@ Each severity has four tokens:
 
 ### 6.1 Brand mark
 
-- **A lemon pennant on a canvas-white pole with a round knob, on an ink tile** (radius 22% of the tile). Geometry lives in `src/theme/brand.ts`; `BrandMark` draws it in the app and `scripts/brand-assets.mjs` renders the icon, adaptive icon, splash and favicon from the same numbers.
-- The pennant tapers (the fly edge is shorter than the hoist) and holds a still S-wave pose in icons. In the app it sits beside the "Flag All Things" wordmark on Scan (28 pt), and waves on a 2.4 s sine loop in empty History (56 pt) and on the label intro (48 pt). The loop stops under Reduce Motion and on web.
+- **A lemon pennant with a bite out of its fly edge, on a canvas-white pole with a round knob, on a pine tile** (radius 22% of the tile). Geometry lives in `src/theme/brand.ts`; `BrandMark` draws it in the app and `scripts/brand-assets.mjs` renders the icon, adaptive icon, splash and favicon from the same numbers.
+- The pennant tapers (the fly edge is shorter than the hoist) and holds a still S-wave pose in icons. The bite (`bitePath`, two circles pinned to the fly corner) is what says food; it rides the wave with the cloth, and in the icons it is a mask so the Android foreground and monochrome layers keep it as a hole. In the app it sits beside the "Food-Flag" wordmark on Scan (28 pt), and waves on a 2.4 s sine loop in empty History (56 pt) and on the label intro (48 pt). The loop stops under Reduce Motion and on web.
 - Splash: the tile at 96 pt on `canvas` (dark: `#12110E`).
 
 ## 7. Imagery
@@ -230,7 +240,7 @@ Each severity has four tokens:
 
 | Component | Rules |
 |---|---|
-| **Primary button** | `ink` fill, `onInk` `bodyStrong` label, `radius.md`, height 48, full width on mobile. **One per view.** Hover: 8% `canvas` overlay. Pressed: `spring.press`. Disabled: 38% opacity plus the helper text below. Focus: 2 pt `ink` ring, 2 pt offset. |
+| **Primary button** | Lemon (`tertiary`) fill, `onTertiary` `bodyStrong` label, `radius.md`, height 48, full width on mobile. **One per view.** Hover: 8% `canvas` overlay. Pressed: `spring.press`. Disabled: `secondary` (sand) fill with `muted` label plus the helper text below. Focus: 2 pt `ink` ring, 2 pt offset. |
 | **Secondary button** | `surface` fill, 1 pt `borderStrong`, `ink` label, height 48. |
 | **Text button** | `ink` `bodyStrong`, underlined on hover and focus, 44 pt hit area. |
 | **Input** | `surface`, 1 pt `borderStrong`, `radius.sm`, height 48, `body`. Focus: 2 pt `ink` border. Error: 2 pt `danger.fg` border, plus a `danger.fg` icon and `meta` message below. The label sits above in `meta`, `muted`. |
@@ -240,7 +250,7 @@ Each severity has four tokens:
 | **Banner** | `tint` of its severity (Example uses `info`), a `fg` icon, `meta` text in `ink`, `radius.md`, and at most one text link. |
 | **Chip (example barcode, E-number)** | `surface`, 1 pt `borderStrong`, `radius.sm`, height 44, `body`. The E-number chip has a trailing `x` with a 44 pt target. |
 | **Tab bar** | `surface` with a 1 pt top `border`. Icon plus `tag` label, always visible (never icon-only). Active: `ink`. Inactive: `muted`. |
-| **Toast** | Elevation 2, `radius.lg`, `ink` background with `onInk` text in light mode (inverted for emphasis), the action as `bodyStrong` underlined. It sits `s3` above the tab bar. |
+| **Toast** | Elevation 2, `radius.lg`, `pine` background with `onPine` text, the action as `bodyStrong` underlined. It sits `s3` above the tab bar. |
 | **Skeleton** | `secondary` (sand) blocks at the final sizes and radii, with a shimmer sweep (1.5 s, linear) that is static under reduced motion. |
 | **Viewfinder** | Full-width camera with a `radius.lg` mask. Corner brackets are 3 pt `#FFFFFF` strokes. The hint pill is `scrim` + white `meta`. The torch button is a 44 pt `scrim` circle, top-right inside the safe area. |
 | **History row** | Height ≥ 64. Thumbnail 48, then name (`body`, 2 lines max) and brand (`meta`, `muted`), with a trailing verdict word and icon in `fg` and the time in `meta`. |

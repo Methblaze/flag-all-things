@@ -2,16 +2,18 @@
 // Run: node scripts/brand-assets.mjs   (uses Playwright's Chromium, already a dev dependency)
 import { writeFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
-import { MARK, flagPath } from '../src/theme/brand.ts';
+import { MARK, bitePath, flagPath } from '../src/theme/brand.ts';
 
-const INK = '#16181D', CANVAS = '#F6F4EE', LEMON = '#E2F56A';
+const INK = '#1F3D36', CANVAS = '#F6F4EE', LEMON = '#E2F56A'; // INK is the tile: brand pine
 
+// The bite is a mask, not a tile-coloured patch, so it stays a hole on the transparent Android foreground and monochrome layers.
 const mark = (scale, { pole = CANVAS, flag = LEMON } = {}) => {
   const { knob: k, pole: p, flagStroke, restPhase } = MARK;
   return `<g transform="translate(512 512) scale(${scale}) translate(-50 -50)">
     <circle cx="${k.cx}" cy="${k.cy}" r="${k.r}" fill="${pole}"/>
     <rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" rx="${p.rx}" fill="${pole}"/>
-    <path d="${flagPath(restPhase)}" fill="${flag}" stroke="${flag}" stroke-width="${flagStroke}" stroke-linejoin="round"/>
+    <mask id="bite"><rect x="0" y="0" width="100" height="100" fill="#fff"/><path d="${bitePath(restPhase)}" fill="#000"/></mask>
+    <path d="${flagPath(restPhase)}" fill="${flag}" stroke="${flag}" stroke-width="${flagStroke}" stroke-linejoin="round" mask="url(#bite)"/>
   </g>`;
 };
 const svg = body => `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">${body}</svg>`;

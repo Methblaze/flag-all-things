@@ -79,14 +79,14 @@ function ToastView({ toast, onAction, onPause, onResume, onDismiss }: { toast: T
       <Animated.View
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
-        style={[styles.toast, { backgroundColor: c.ink, shadowColor: c.shadow }, drag]}
+        style={[styles.toast, { backgroundColor: c.pine, shadowColor: c.shadow }, drag]}
       >
-        <AppText color={c.onInk} style={styles.message}>{toast.message}</AppText>
+        <AppText color={c.onPine} style={styles.message}>{toast.message}</AppText>
         {toast.actionLabel ? (
           <Pressable accessibilityRole="button" onPress={onAction} onHoverIn={onPause} onHoverOut={onResume}
             onFocus={onPause} onBlur={onResume} hitSlop={space.s2}
             style={styles.action}>
-            <AppText variant="bodyStrong" color={c.onInk} style={styles.underline}>{toast.actionLabel}</AppText>
+            <AppText variant="bodyStrong" color={c.onPine} style={styles.underline}>{toast.actionLabel}</AppText>
           </Pressable>
         ) : null}
       </Animated.View>

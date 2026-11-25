@@ -12,9 +12,10 @@ export function useHeaderOptions() {
   const c = useTheme();
   return {
     contentStyle: { backgroundColor: c.canvas },
-    headerTintColor: c.ink,
-    headerTitleStyle: { fontFamily: fonts.headingSemi, color: c.ink },
-    headerLargeTitleStyle: { fontFamily: fonts.heading, color: c.ink },
+    // Titles and the back chevron carry the pine (the 30%) on every screen.
+    headerTintColor: c.pineInk,
+    headerTitleStyle: { fontFamily: fonts.headingSemi, color: c.pineInk },
+    headerLargeTitleStyle: { fontFamily: fonts.heading, color: c.pineInk },
     headerShadowVisible: false,
     // A chevron only; long-press still opens the system back-history menu.
     headerBackButtonDisplayMode: 'minimal' as const,
@@ -30,10 +31,11 @@ export function TabStack({ title, large = true }: { title: string; large?: boole
 
 /** Scan's inline title: the brand mark with the app name. */
 export function BrandTitle() {
+  const c = useTheme();
   return (
     <View style={styles.brand}>
       <BrandMark size={28} />
-      <AppText variant="headline">Flag All Things</AppText>
+      <AppText variant="headline" color={c.pineInk}>Food-Flag</AppText>
     </View>
   );
 }

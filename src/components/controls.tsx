@@ -41,8 +41,8 @@ export function ToggleRow({ label, description, value, onChange, testID }: { lab
         <AppText>{label}</AppText>
         {description ? <AppText variant="meta" color={c.muted}>{description}</AppText> : null}
       </View>
-      <View style={[styles.track, { backgroundColor: value ? c.ink : c.surface, borderColor: value ? c.ink : c.borderStrong }]}>
-        <Animated.View style={[styles.thumb, { backgroundColor: value ? c.onInk : c.borderStrong }, thumb]} />
+      <View style={[styles.track, { backgroundColor: value ? c.pine : c.surface, borderColor: value ? c.pine : c.borderStrong }]}>
+        <Animated.View style={[styles.thumb, { backgroundColor: value ? c.onPine : c.borderStrong }, thumb]} />
       </View>
     </Pressable>
   );
@@ -65,13 +65,13 @@ export function ChipToggle({ label, value, onChange, testID }: { label: string; 
           onPressIn={press.onPressIn}
           onPressOut={press.onPressOut}
           style={(s) => [styles.chip, value
-            ? { backgroundColor: c.ink, borderColor: c.ink }
+            ? { backgroundColor: c.pine, borderColor: c.pine }
             : { backgroundColor: ((s as WebState).hovered || s.pressed) ? c.canvas : c.surface, borderColor: c.borderStrong }]}
         >
           {/* Plus turns to tick: the new icon mounts and pops in (icon swap, deep scale). */}
-          <Animated.View key={value ? 'on' : 'off'} entering={POP_ICON}><Icon name={value ? 'check' : 'plus'} size={14} color={value ? c.onInk : c.muted} weight="semibold" /></Animated.View>
+          <Animated.View key={value ? 'on' : 'off'} entering={POP_ICON}><Icon name={value ? 'check' : 'plus'} size={14} color={value ? c.onPine : c.muted} weight="semibold" /></Animated.View>
           {/* One weight in both states: a bold label would widen the chip and reflow the whole row. */}
-          <AppText color={value ? c.onInk : c.ink}>{label}</AppText>
+          <AppText color={value ? c.onPine : c.ink}>{label}</AppText>
         </Pressable>
       </Animated.View>
     </LayoutAnimationConfig>
@@ -94,9 +94,9 @@ export function Segmented<T extends string>({ label, options, value, onChange, t
               accessibilityState={{ checked: selected }}
               aria-checked={selected}
               onPress={() => { if (!selected) { tick(); onChange(o.value); } }}
-              style={(s) => [styles.segItem, selected && { backgroundColor: c.surface, borderColor: c.borderStrong, borderWidth: 1 }]}
+              style={(s) => [styles.segItem, selected && { backgroundColor: c.pine, borderColor: c.pine, borderWidth: 1 }]}
             >
-              <AppText variant={selected ? 'bodyStrong' : 'body'} color={selected ? c.ink : c.muted} numberOfLines={1}>{o.label}</AppText>
+              <AppText variant={selected ? 'bodyStrong' : 'body'} color={selected ? c.onPine : c.muted} numberOfLines={1}>{o.label}</AppText>
             </Pressable>
           );
         })}

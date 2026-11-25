@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/brand/mark.svg" width="88" alt="Flag All Things logo: a lemon flag on an ink tile" />
+  <img src="assets/brand/mark.svg" width="88" alt="Food-Flag logo: a lemon flag with a bite out of it, on a pine tile" />
 </p>
 
-<h1 align="center">Flag All Things</h1>
+<h1 align="center">Food-Flag</h1>
 
 <p align="center">
   A grocery scanner for Danish shoppers. Point it at a barcode and get one plain verdict,<br />
@@ -59,7 +59,7 @@ A pure rules engine (`src/engine/`) turns a product and your preferences into fl
 
 Built through a staged process: brainstorm, interaction spec (flows, edge cases, every component state), a written design system ([DESIGN.md](DESIGN.md)), then motion and a native-platform audit. The specs live in [docs/superpowers/specs](docs/superpowers/specs).
 
-- **Ink and lemon.** Near-black ink for actions, warm sand for structure and one rare lemon highlight (the brand flag, the scan reticle, the active tab on Android and web). Colour carries meaning, never decoration, and severity is never colour alone.
+- **Pine and lemon, 60-30-10.** A cream canvas for 60%, deep pine for 30% (titles, selected controls, the toast, the brand tile) and lemon for the 10% that should pop: the one call to action per screen, the brand flag and the scan reticle. Severity colours sit outside the palette, so a verdict never blends into the brand, and severity is never colour alone.
 - **Native where it counts.** On iOS: the system tab bar (Liquid Glass on iOS 26, minimises on scroll), native navigation bars with large titles, the system back button with swipe and long-press history, SF Symbols weighted to the text beside them, and inset grouped lists.
 - **Accessible by default.** Every text pair is contrast-checked (body text 7:1 or more), Increase Contrast swaps in stronger tokens, Dynamic Type wraps rather than clips, every control is labelled for VoiceOver and TalkBack, and touch targets are at least 44 pt.
 - **Motion with a job.** The scan reticle snaps onto the code, the verdict pops in with a haptic that matches it (error, warning or success), chips and tabs answer the tap. Everything uses named duration and spring tokens and switches off with Reduce Motion.
@@ -113,4 +113,4 @@ To read labels for real, paste an Anthropic API key into **Settings > AI label r
 - Fonts: [Figtree](https://fonts.google.com/specimen/Figtree) and [Noto Sans](https://fonts.google.com/noto/specimen/Noto+Sans), SIL Open Font License.
 - Icons: SF Symbols (Apple), Material Symbols (Google), Feather.
 
-Flag All Things is a personal and portfolio project. It summarises public data and is not medical or dietary advice; always check the label if you have an allergy.
+Food-Flag is a personal and portfolio project. It summarises public data and is not medical or dietary advice; always check the label if you have an allergy.
